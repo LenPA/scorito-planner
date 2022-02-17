@@ -1,0 +1,24 @@
+<!--<table mat-table [dataSource]="races">-->
+<!--  <ng-container matColumnDef="Name">-->
+<!--    <th mat-header-cell *matHeaderCellDef>Name</th>-->
+<!--    <td mat-cell *matCellDef="let race"> {{race.Name}} </td>-->
+<!--  </ng-container>-->
+<!--  <ng-container matColumnDef="StartDate">-->
+<!--    <th mat-header-cell *matHeaderCellDef>Date</th>-->
+<!--    <td mat-cell *matCellDef="let race"> {{race.StartDate}} </td>-->
+<!--  </ng-container>-->
+<!--  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>-->
+<!--  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>-->
+<!--</table>-->
+
+<!--<table mat-table [dataSource]="races">-->
+<!--  <ng-container *ngFor="let race of races">-->
+<!--    <ng-container matColumnDef="{{race.Name}}">-->
+<!--      <th mat-header-cell *matHeaderCellDef>{{race.Name}}</th>-->
+<!--      <td mat-cell *matCellDef> {{race.Name}} </td>-->
+<!--    </ng-container>-->
+<!--  </ng-container>-->
+<!--  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>-->
+<!--  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>-->
+<!--</table>-->
+{{riders | json}}
