@@ -1,8 +1,21 @@
 {
-  "/api/*": {
-    "target": "http://localhost:8085",
-    "secure": false,
+  "/cycling/*": {
+    "target": "https://cycling.scorito.com/",
+    "secure": true,
     "logLevel": "info",
     "changeOrigin": true
   }
 }
+
+
+
+//{
+//  "/api": {
+//    "target": "https://api.spotify.com/v1",
+//    "secure": true,
+//    "changeOrigin": true,
+//    "pathRewrite": {
+//      "^/api": ""
+//    }
+//  }
+//}

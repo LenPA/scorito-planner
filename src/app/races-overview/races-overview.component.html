@@ -1,24 +1,42 @@
-<!--<table mat-table [dataSource]="races">-->
-<!--  <ng-container matColumnDef="Name">-->
-<!--    <th mat-header-cell *matHeaderCellDef>Name</th>-->
-<!--    <td mat-cell *matCellDef="let race"> {{race.Name}} </td>-->
-<!--  </ng-container>-->
-<!--  <ng-container matColumnDef="StartDate">-->
-<!--    <th mat-header-cell *matHeaderCellDef>Date</th>-->
-<!--    <td mat-cell *matCellDef="let race"> {{race.StartDate}} </td>-->
-<!--  </ng-container>-->
-<!--  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>-->
-<!--  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>-->
-<!--</table>-->
+<table mdbTable>
+  <thead>
+  <tr>
+    <th></th>
+    <th (click)="orderByRiderName()">Rider</th>
+    <th>Value</th>
+    <th>Nr of races</th>
+    <th *ngFor="let race of races" (click)="orderByRace(race.EventId)">{{race.Name}} </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let rider of riders">
+    <th><input type="checkbox" id="{{rider.RiderId}}" (change)=selectRider(rider) [checked]="isSelectedRider(rider.RiderId)"></th>
+    <th>{{rider.NameShort}}</th>
+    <th>{{rider.Price | currency: 'EUR' : 'symbol': '1.0-0'}}</th>
+    <th>{{rider.Races.length > 0 ? rider.Races.length : ""}}</th>
+    <th *ngFor="let race of races"><span *ngIf="isRacing(rider.Races, race.EventId)" class="fa-solid fa-user text-info"></span></th>
+  </tr>
+  </tbody>
+</table>
 
-<!--<table mat-table [dataSource]="races">-->
+<!--<table mat-table [dataSource]="riders" multiTemplateDataRows>-->
+<!--&lt;!&ndash;  <ng-container matColumnDef="{{race.EventId}}">&ndash;&gt;-->
+<!--&lt;!&ndash;    <th mat-header-cell *matHeaderCellDef>{{race.Name}}</th>&ndash;&gt;-->
+<!--&lt;!&ndash;    <td mat-cell *matCellDef> {{race.Name}} </td>&ndash;&gt;-->
+<!--&lt;!&ndash;  </ng-container>&ndash;&gt;-->
+<!--  <ng-container matColumnDef="Rider.Name">-->
+<!--    <th mat-header-cell *matHeaderCellDef>Rider</th>-->
+<!--    <td mat-cell *matCellDef>"Rider"</td>-->
+<!--  </ng-container>-->
 <!--  <ng-container *ngFor="let race of races">-->
-<!--    <ng-container matColumnDef="{{race.Name}}">-->
+<!--    <ng-container matColumnDef="{{race.EventId}}">-->
 <!--      <th mat-header-cell *matHeaderCellDef>{{race.Name}}</th>-->
 <!--      <td mat-cell *matCellDef> {{race.Name}} </td>-->
 <!--    </ng-container>-->
 <!--  </ng-container>-->
 <!--  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>-->
-<!--  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>-->
+<!--  <ng-container *ngFor="let rider of riders">-->
+<!--    <tr mat-row *matRowDef="let row; columns: [rider.NameShort].concat(getRaces(rider.Races));"></tr>-->
+<!--  </ng-container>-->
 <!--</table>-->
-{{riders | json}}
+<!--{{riders | json}}-->
