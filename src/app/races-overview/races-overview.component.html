@@ -1,42 +1,74 @@
-<table mdbTable>
+<table>
   <thead>
   <tr>
-    <th></th>
+    <th class="px-2" (click)="orderBySelectedRiders()"><span class="fa fa-check"></span></th>
     <th (click)="orderByRiderName()">Rider</th>
-    <th>Value</th>
-    <th>Nr of races</th>
-    <th *ngFor="let race of races" (click)="orderByRace(race.EventId)">{{race.Name}} </th>
+    <th class="px-2 text-center" (click)="orderByQuality(6)" title="cobbles"><span class="fa fa-square"></span></th>
+    <th class="px-2 text-center" (click)="orderByQuality(3)" title="sprint"><span class="fa fa-bolt"></span></th>
+    <th class="px-2 text-center" (click)="orderByQuality(5)" title="hill"><span class="fa fa-caret-up"></span><span class="fa fa-caret-up"></span></th>
+    <th class="px-2 text-center" (click)="orderByQuality(1)" title="climb"><span class="fa fa-mountain"></span></th>
+    <th (click)="orderByValue()">Value</th>
+    <th (click)="orderByTeam()">Team</th>
+    <th class="text-center" (click)="orderByNrOfRaces()">#races</th>
+    <th class="race-title px-2" *ngFor="let race of races" (click)="orderByRace(race.EventId)"
+        title="{{race.Name}}">{{race.shortName}} </th>
   </tr>
   </thead>
   <tbody>
-  <tr *ngFor="let rider of riders">
-    <th><input type="checkbox" id="{{rider.RiderId}}" (change)=selectRider(rider) [checked]="isSelectedRider(rider.RiderId)"></th>
-    <th>{{rider.NameShort}}</th>
+  <tr *ngFor="let rider of riders" [bgColor]="isSelectedRider(rider.RiderId) ? 'gainsboro' : 'white' ">
+    <th class="text-center"><input type="checkbox" id="{{rider.RiderId}}" (change)=selectRider(rider)
+                                   [checked]="isSelectedRider(rider.RiderId)"></th>
+    <th class="rider">{{rider.NameShort}}
+    <div class="hide">
+      <div class="card position-absolute hide">
+        <div class="card-body">
+          <div class="card-title">{{rider.FirstName}} {{rider.LastName}}</div>
+          <div class="card-text">
+            {{rider.Type}}
+          </div>
+        </div>
+      </div>
+    </div>
+    </th>
+    <th class="px-2 text-center">{{getQuality(rider, 6)}}</th>
+    <th class="px-2 text-center">{{getQuality(rider, 3)}}</th>
+    <th class="px-2 text-center">{{getQuality(rider, 5)}}</th>
+    <th class="px-2 text-center">{{getQuality(rider, 1)}}</th>
     <th>{{rider.Price | currency: 'EUR' : 'symbol': '1.0-0'}}</th>
-    <th>{{rider.Races.length > 0 ? rider.Races.length : ""}}</th>
-    <th *ngFor="let race of races"><span *ngIf="isRacing(rider.Races, race.EventId)" class="fa-solid fa-user text-info"></span></th>
+    <ng-container *ngIf="getTeam(rider.TeamId) as team">
+      <th class="text-center" title="{{team.Name}}"><img style="height: 30px;" src="{{team.ImageUrl}}"/></th>
+    </ng-container>
+    <th class="text-center">{{rider.Races.length > 0 ? rider.Races.length : ""}}</th>
+    <th *ngFor="let race of races" class="text-center"><span *ngIf="isRacing(rider.Races, race.EventId)"
+                                                             class="fa fa-check-circle text-success"></span></th>
   </tr>
   </tbody>
 </table>
 
-<!--<table mat-table [dataSource]="riders" multiTemplateDataRows>-->
-<!--&lt;!&ndash;  <ng-container matColumnDef="{{race.EventId}}">&ndash;&gt;-->
-<!--&lt;!&ndash;    <th mat-header-cell *matHeaderCellDef>{{race.Name}}</th>&ndash;&gt;-->
-<!--&lt;!&ndash;    <td mat-cell *matCellDef> {{race.Name}} </td>&ndash;&gt;-->
-<!--&lt;!&ndash;  </ng-container>&ndash;&gt;-->
-<!--  <ng-container matColumnDef="Rider.Name">-->
-<!--    <th mat-header-cell *matHeaderCellDef>Rider</th>-->
-<!--    <td mat-cell *matCellDef>"Rider"</td>-->
-<!--  </ng-container>-->
-<!--  <ng-container *ngFor="let race of races">-->
-<!--    <ng-container matColumnDef="{{race.EventId}}">-->
-<!--      <th mat-header-cell *matHeaderCellDef>{{race.Name}}</th>-->
-<!--      <td mat-cell *matCellDef> {{race.Name}} </td>-->
-<!--    </ng-container>-->
-<!--  </ng-container>-->
-<!--  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>-->
-<!--  <ng-container *ngFor="let rider of riders">-->
-<!--    <tr mat-row *matRowDef="let row; columns: [rider.NameShort].concat(getRaces(rider.Races));"></tr>-->
-<!--  </ng-container>-->
-<!--</table>-->
-<!--{{riders | json}}-->
+
+
+<div class="row p-2 fixed-row-bottom align-items-center border-1 border-light">
+  <div class="col-auto">Budget: {{remainingBudget()  | currency: 'EUR' : 'symbol': '1.0-0'}}</div>
+  <div class="col-auto">Riders selected: {{this.selectedRiders.length}} / 20</div>
+  <div class="col-auto">
+    <div class="position-relative" style="min-width: 4em">
+    <select class="form-control" [(ngModel)]="teamFilter" (ngModelChange)="filterByTeam($event)">
+      <option [ngValue]="null" disabled selected>Filter by team</option>
+      <option *ngFor="let team of teams" [ngValue]="team">{{team.Name}}</option>
+    </select>
+    <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
+          (click)="onTeamClick($event)"></span>
+    </div>
+  </div>
+  <div class="col-auto">
+    <div class="position-relative" style="min-width: 10em">
+    <select class="form-control" [(ngModel)]="qualityFilter" (ngModelChange)="filterByQuality($event)">
+      <option [ngValue]="null" disabled selected>Filter by quality</option>
+      <option *ngFor="let quality of qualities" [ngValue]="quality">{{quality}}</option>
+    </select>
+    <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
+          (click)="onQualityClick($event)"></span>
+  </div>
+  </div>
+</div>
+

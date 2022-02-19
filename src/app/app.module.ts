@@ -7,6 +7,9 @@ import { RacesOverviewComponent } from './races-overview/races-overview.componen
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTableModule} from "@angular/material/table";
 import {HttpClientModule} from "@angular/common/http";
+import {MatSelectModule} from "@angular/material/select";
+import {FormsModule} from "@angular/forms";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
   declarations: [
@@ -18,7 +21,10 @@ import {HttpClientModule} from "@angular/common/http";
 		HttpClientModule,
 		AppRoutingModule,
 		BrowserAnimationsModule,
-		MatTableModule
+		MatTableModule,
+		MatSelectModule,
+		FormsModule,
+		MatIconModule
 	],
   providers: [],
   bootstrap: [AppComponent]

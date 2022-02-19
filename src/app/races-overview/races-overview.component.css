@@ -1,0 +1,26 @@
+.hide {
+    display: none;
+}
+
+.rider:hover .hide {
+    display: inline-block;
+    z-index: 9;
+}
+.race-title {
+
+}
+
+thead {
+    background-color: white;
+    position: sticky;
+    top: 0px;
+}
+
+.fixed-row-bottom {
+    background-color: white;
+    position: fixed;
+    bottom: 0;
+}
+
+tr:nth-child(even) {background: whitesmoke}
+
