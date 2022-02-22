@@ -1,6 +1,6 @@
-import {Team} from "./types";
+import {ScoritoTeam} from "./scorito-types";
 
-export const teams: Team[] = [
+export const teams: ScoritoTeam[] = [
 	{
 		"Abbreviation": "CJR",
 		"Id": 2,

@@ -10,11 +10,15 @@ import {HttpClientModule} from "@angular/common/http";
 import {MatSelectModule} from "@angular/material/select";
 import {FormsModule} from "@angular/forms";
 import {MatIconModule} from "@angular/material/icon";
+import { RiderJsonComponent } from './rider-json/rider-json.component';
+import { RiderCardComponent } from './races-overview/rider-card/rider-card.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    RacesOverviewComponent
+    RacesOverviewComponent,
+    RiderJsonComponent,
+    RiderCardComponent
   ],
 	imports: [
 		BrowserModule,

@@ -1,10 +1,14 @@
 export interface ScoritoRace {
 	CompetitionId: number;
 	EventId: number;
-	Name: string;
-	QualificationEventId: number;
 	StartDate: string;
-	shortName?: string;
+	ImageUrl: string;
+	MarketRoundId: number;
+	StageId: number;
+	Status: number;
+	TranslatedDescription: string;
+	TranslatedName: string;
+	TranslatedNameShort: string;
 }
 
 export interface ScoritoRider {
@@ -17,7 +21,11 @@ export interface ScoritoRider {
 	RiderId: number;
 	TeamId: number;
 	Type: number;
-	Races: number[];
+	Races:  any;
+	age?: number;
+	description?: string;
+	nationality?: string;
+	flagUrl?: string;
 }
 
 export interface ScoritoQuality {

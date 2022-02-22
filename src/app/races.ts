@@ -1,141 +1,208 @@
-import {Race} from "./types";
+import {ScoritoRace} from "./scorito-types";
 
-export const races: Race [] = [
-  {
-    "CompetitionId": 26,
-    "EventId": 582,
-    "Name": "Omloop Het Nieuwsblad",
-    "QualificationEventId": 0,
-    "StartDate": "2022-02-26T10:20:00",
-		"shortName": "OML"
-  },
-  {
-    "CompetitionId": 27,
-    "EventId": 583,
-    "Name": "Kuurne-Brussel-Kuurne",
-    "QualificationEventId": 0,
-    "StartDate": "2022-02-27T11:00:00",
-		"shortName": "KBK"
+export const races: ScoritoRace [] = [
+	{
+		"CompetitionId": 26,
+		"EventId": 582,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_26.png",
+		"MarketRoundId": 4347,
+		"StageId": 1500,
+		"Status": 0,
+		"StartDate": "2022-02-26T10:15:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "Omloop Het Nieuwsblad",
+		"TranslatedNameShort": "OML"
 	},
-  {
-    "CompetitionId": 41,
-    "EventId": 584,
-    "Name": "Strade Bianche",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-05T10:45:00",
-		"shortName": "SB"
-  },
-  {
-    "CompetitionId": 29,
-    "EventId": 585,
-    "Name": "Dwars door Vlaanderen",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-30T10:25:00",
-		"shortName": "DDV"
-  },
-  {
-    "CompetitionId": 30,
-    "EventId": 586,
-    "Name": "E3 Saxo Bank",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-25T11:30:00",
-		"shortName": "E3"
-  },
-  {
-    "CompetitionId": 33,
-    "EventId": 587,
-    "Name": "Gent-Wevelgem",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-27T08:15:00",
-		"shortName": "GW"
-  },
-  {
-    "CompetitionId": 32,
-    "EventId": 588,
-    "Name": "Ronde van Vlaanderen",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-03T08:18:00",
-		"shortName": "RVV"
+	{
+		"CompetitionId": 27,
+		"EventId": 583,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_27.png",
+		"MarketRoundId": 4348,
+		"StageId": 1501,
+		"Status": 0,
+		"StartDate": "2022-02-27T11:15:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "Kuurne-Bruxelles-Kuurne",
+		"TranslatedNameShort": "KBK"
 	},
-  {
-    "CompetitionId": 34,
-    "EventId": 589,
-    "Name": "Paris-Roubaix",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-17T09:15:00",
-		"shortName": "PR"
-
+	{
+		"CompetitionId": 41,
+		"EventId": 584,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_41.png",
+		"MarketRoundId": 4349,
+		"StageId": 1502,
+		"Status": 0,
+		"StartDate": "2022-03-05T10:45:00",
+		"TranslatedDescription": "Hill specialists",
+		"TranslatedName": "Strade Bianche",
+		"TranslatedNameShort": "SB"
 	},
-  {
-    "CompetitionId": 37,
-    "EventId": 590,
-    "Name": "Amstel Gold Race",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-10T10:05:00",
-		"shortName": "AGR"
-  },
-  {
-    "CompetitionId": 35,
-    "EventId": 591,
-    "Name": "Fleche Wallonne",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-20T09:35:00",
-		"shortName": "WP"
-  },
-  {
-    "CompetitionId": 36,
-    "EventId": 592,
-    "Name": "Liège-Bastogne-Liège",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-24T08:15:00",
-		"shortName": "LBL"
-  },
-  {
-    "CompetitionId": 53,
-    "EventId": 593,
-    "Name": "Eschborn-Frankfurt",
-    "QualificationEventId": 0,
-    "StartDate": "2022-05-01T10:00:00",
-		"shortName": "EF"
-  },
-  {
-    "CompetitionId": 31,
-    "EventId": 594,
-    "Name": "Flèche Brabançonne",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-13T10:30:00",
-		"shortName": "BP"
-  },
-  {
-    "CompetitionId": 59,
-    "EventId": 595,
-    "Name": "Brugge-De Panne",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-23T10:45:00",
-		"shortName": "BDP"
-  },
-  {
-    "CompetitionId": 28,
-    "EventId": 596,
-    "Name": "Milaan-San Remo",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-19T09:00:00",
-		"shortName": "MSR"
-  },
-  {
-    "CompetitionId": 40,
-    "EventId": 597,
-    "Name": "Scheldeprijs",
-    "QualificationEventId": 0,
-    "StartDate": "2022-04-06T10:43:00",
-		"shortName": "SP"
-  },
-  {
-    "CompetitionId": 65,
-    "EventId": 626,
-    "Name": "Milano-Torino",
-    "QualificationEventId": 0,
-    "StartDate": "2022-03-16T11:20:00",
-		"shortName": "MT"
-  }
+	{
+		"CompetitionId": 28,
+		"EventId": 596,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_28.png",
+		"MarketRoundId": 4350,
+		"StageId": 1504,
+		"Status": 0,
+		"StartDate": "2022-03-19T09:00:00",
+		"TranslatedDescription": "Sprinters",
+		"TranslatedName": "Milan-San Remo",
+		"TranslatedNameShort": "MSR"
+	},
+	{
+		"CompetitionId": 59,
+		"EventId": 595,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_59.png",
+		"MarketRoundId": 4351,
+		"StageId": 1505,
+		"Status": 0,
+		"StartDate": "2022-03-23T10:45:00",
+		"TranslatedDescription": "Sprinters",
+		"TranslatedName": "Brugge-De Panne",
+		"TranslatedNameShort": "BDP"
+	},
+	{
+		"CompetitionId": 30,
+		"EventId": 586,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_30.png",
+		"MarketRoundId": 4352,
+		"StageId": 1506,
+		"Status": 0,
+		"StartDate": "2022-03-25T11:30:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "E3 Saxo Bank Classic",
+		"TranslatedNameShort": "E3"
+	},
+	{
+		"CompetitionId": 33,
+		"EventId": 587,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_33.png",
+		"MarketRoundId": 4353,
+		"StageId": 1507,
+		"Status": 0,
+		"StartDate": "2022-03-27T08:15:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "Gent-Wevelgem",
+		"TranslatedNameShort": "GW"
+	},
+	{
+		"CompetitionId": 29,
+		"EventId": 585,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_29.png",
+		"MarketRoundId": 4354,
+		"StageId": 1508,
+		"Status": 0,
+		"StartDate": "2022-03-30T10:25:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "Dwars door Vlaanderen",
+		"TranslatedNameShort": "DDV"
+	},
+	{
+		"CompetitionId": 32,
+		"EventId": 588,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_32.png",
+		"MarketRoundId": 4355,
+		"StageId": 1509,
+		"Status": 0,
+		"StartDate": "2022-04-03T08:18:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "Tour of Flanders",
+		"TranslatedNameShort": "TOF"
+	},
+	{
+		"CompetitionId": 40,
+		"EventId": 597,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_40.png",
+		"MarketRoundId": 4356,
+		"StageId": 1510,
+		"Status": 0,
+		"StartDate": "2022-04-06T10:43:00",
+		"TranslatedDescription": "Sprinters",
+		"TranslatedName": "Scheldeprijs",
+		"TranslatedNameShort": "SP"
+	},
+	{
+		"CompetitionId": 37,
+		"EventId": 590,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_37.png",
+		"MarketRoundId": 4357,
+		"StageId": 1513,
+		"Status": 0,
+		"StartDate": "2022-04-10T10:05:00",
+		"TranslatedDescription": "Hill specialists",
+		"TranslatedName": "Amstel Gold Race",
+		"TranslatedNameShort": "AGR"
+	},
+	{
+		"CompetitionId": 31,
+		"EventId": 594,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_31.png",
+		"MarketRoundId": 4358,
+		"StageId": 1512,
+		"Status": 0,
+		"StartDate": "2022-04-13T10:30:00",
+		"TranslatedDescription": "Hill specialists",
+		"TranslatedName": "Flèche Brabançonne",
+		"TranslatedNameShort": "BP"
+	},
+	{
+		"CompetitionId": 34,
+		"EventId": 589,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_34.png",
+		"MarketRoundId": 4359,
+		"StageId": 1511,
+		"Status": 0,
+		"StartDate": "2022-04-17T09:15:00",
+		"TranslatedDescription": "Cobbles specialists",
+		"TranslatedName": "Paris-Roubaix",
+		"TranslatedNameShort": "PR"
+	},
+	{
+		"CompetitionId": 35,
+		"EventId": 591,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_35.png",
+		"MarketRoundId": 4360,
+		"StageId": 1514,
+		"Status": 0,
+		"StartDate": "2022-04-20T09:35:00",
+		"TranslatedDescription": "Punchers",
+		"TranslatedName": "Flèche Wallonne",
+		"TranslatedNameShort": "LFW"
+	},
+	{
+		"CompetitionId": 36,
+		"EventId": 592,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_36.png",
+		"MarketRoundId": 4361,
+		"StageId": 1515,
+		"Status": 0,
+		"StartDate": "2022-04-24T08:15:00",
+		"TranslatedDescription": "Hill specialists",
+		"TranslatedName": "Liège-Bastogne-Liège",
+		"TranslatedNameShort": "LBL"
+	},
+	{
+		"CompetitionId": 53,
+		"EventId": 593,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_53.png",
+		"MarketRoundId": 4362,
+		"StageId": 1516,
+		"Status": 0,
+		"StartDate": "2022-05-01T10:00:00",
+		"TranslatedDescription": "Sprinters",
+		"TranslatedName": "Eschborn-Frankfurt",
+		"TranslatedNameShort": "ES"
+	},
+	{
+		"CompetitionId": 65,
+		"EventId": 626,
+		"ImageUrl": "https://cdn.scorito.com/cycling/competition/country/competition_65.png",
+		"MarketRoundId": 4391,
+		"StageId": 1503,
+		"Status": 0,
+		"StartDate": "2022-03-16T11:20:00",
+		"TranslatedDescription": "Hill specialists",
+		"TranslatedName": "Milano-Torino",
+		"TranslatedNameShort": "MT"
+	}
 ]

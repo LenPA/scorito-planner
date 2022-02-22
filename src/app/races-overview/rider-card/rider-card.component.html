@@ -1,0 +1,31 @@
+<div class="rider-card card position-absolute hide">
+  <h4 class="card-header">{{rider.firstName}} {{rider.lastName}}<span class="float-end"><img style="height: 20px;" src="{{rider.flagUrl}}" title="{{rider.nationality}}" /></span></h4>
+  <div class="card-body">
+    <div *ngIf="rider.description" class="rider-description mb-2">
+      <em>{{rider.description}}</em>
+    </div>
+    <div class="card-subtitle">{{rider.team.name}}</div>
+    <div class="card-subtitle">Age: {{rider.age}} y.o.</div>
+    <div class="card-subtitle">Specialty: {{rider.type}}</div>
+    <div class="card-text">
+      <hr>
+      <table>
+        <ng-container *ngFor="let quality of qualities">
+          <tr>
+            <th style="min-width: 6rem;">{{quality}}</th>
+            <th>
+              <ng-container *ngIf="rider.qualities[quality] as stars">
+                <ng-container *ngFor="let nr of numSequence(stars)"><span
+                    class="fa fa-star text-warning"></span></ng-container>
+              </ng-container>
+            </th>
+          </tr>
+        </ng-container>
+      </table>
+
+    </div>
+  </div>
+  <div class="card-footer">
+    <a href="{{getLink(rider)}}" target="_blank">Check on Wielerflits...</a>
+  </div>
+</div>
