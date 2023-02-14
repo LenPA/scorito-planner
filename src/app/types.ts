@@ -1,3 +1,5 @@
+import {QualityType} from "./scorito-types";
+
 export interface Rider {
 	id: number;
 	age?: number;
@@ -9,7 +11,7 @@ export interface Rider {
 	shortName: string;
 	price: number;
 	type?: string;
-	team: Team;
+	team: any;
 	races: {[index: string] : number};
 	qualities: {[index: string] : number};
 }

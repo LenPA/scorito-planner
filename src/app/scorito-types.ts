@@ -21,7 +21,7 @@ export interface ScoritoRider {
 	RiderId: number;
 	TeamId: number;
 	Type: number;
-	Races:  any;
+	Races?:  any;
 	age?: number;
 	description?: string;
 	nationality?: string;

@@ -6,7 +6,8 @@ import {Observable} from "rxjs";
 	providedIn: 'root',
 })
 export class ScoritoQueryGateway {
-	riderEventsUrl = "/cycling/v2.0/eventrider/200/";
+	riderEventsUrl = "/cycling/v2.0/eventrider/227/";
+	ridersUrl = "/cyclingteammanager/v2.0/marketrider/227";
 	riderProfileUrl = "/cycling/v2.0/rider/details/";
 	options = {
 		headers: new HttpHeaders({
@@ -31,7 +32,11 @@ export class ScoritoQueryGateway {
 	}
 
 	public getRiderProfile(riderNr: string): Observable<any> {
-		return this.client.get(this.riderProfileUrl + riderNr + "/582/nl-NL", this.options);
+		return this.client.get(this.riderProfileUrl + riderNr + "/633/nl-NL", this.options);
 	}
+
+  public getAllRiders(): Observable<any> {
+    return this.client.get(this.ridersUrl, this.options);
+  }
 
 }

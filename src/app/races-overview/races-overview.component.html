@@ -1,81 +1,123 @@
-<table class="main-table">
-  <thead>
-  <tr>
-    <th class="px-2" (click)="orderBySelectedRiders()"><span class="fa fa-check"></span></th>
-    <th (click)="orderByRiderName()">Rider</th>
-    <th class="px-2 text-center" (click)="orderByQuality('Cobbles')" title="cobbles"><span class="fa fa-chess-board"></span>
-    </th>
-    <th class="px-2 text-center" (click)="orderByQuality('Sprint')" title="sprint"><span class="fa fa-bolt"></span></th>
-    <th class="px-2 text-center" (click)="orderByQuality('Hill')" title="hill"><span class="fa fa-caret-up"></span><span
-        class="fa fa-caret-up"></span></th>
-    <th class="px-2 text-center" (click)="orderByQuality('Climb')" title="climb"><span class="fa fa-mountain"></span>
-    </th>
-    <th (click)="orderByValue()">Value</th>
-    <th (click)="orderByTeam()">Team</th>
-    <th class="text-center" (click)="orderByNrOfRaces()">#races</th>
-    <th class="race-title text-center px-2" *ngFor="let race of races" (click)="orderByRace(race.EventId)"
-        title="{{race.TranslatedName}}">{{race.TranslatedNameShort}}<br/><span class="fa {{iconForRaceType(race.TranslatedDescription)}}"></span> </th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr *ngFor="let rider of riders" [bgColor]="isSelectedRider(rider.id) ? 'gainsboro' : 'white' ">
-    <th class="text-center"><input type="checkbox" id="{{rider.id}}" (change)=selectRider(rider)
-                                   [checked]="isSelectedRider(rider.id)"></th>
-    <th class="rider">{{rider.firstName}} {{rider.lastName}}
-      <div class="hide">
-        <app-rider-card [rider]="rider"></app-rider-card>
+<div class="container m-0">
+  <!--  <div class="page d-flex flex-column justify-content-center align-items-center m-auto">-->
+  <div class="">
+    <div class="row">
+      <div class="col">
+        <table class="main-table table table-sm">
+          <thead>
+          <tr>
+            <th class="px-2" (click)="orderBySelectedRiders()"><span class="fa fa-check"></span></th>
+            <th (click)="orderByRiderName()">Rider</th>
+            <th class="px-2 text-center" (click)="orderByQuality('Cobbles')" title="cobbles"><span
+                class="fa fa-chess-board"></span>
+            </th>
+            <th class="px-2 text-center" (click)="orderByQuality('Sprint')" title="sprint"><span
+                class="fa fa-bolt"></span>
+            </th>
+            <th class="px-2 text-center" (click)="orderByQuality('Hill')" title="hill"><span
+                class="fa fa-caret-up"></span></th>
+            <th class="px-2 text-center" (click)="orderByQuality('Climb')" title="climb"><span
+                class="fa fa-mountain"></span>
+            </th>
+            <th (click)="orderByValue()">Value</th>
+            <th (click)="orderByTeam()">Team</th>
+            <th class="text-center" (click)="orderByNrOfRaces()">#races</th>
+            <th class="race-title text-center px-2" *ngFor="let race of races" (click)="orderByRace(race.EventId)"
+                title="{{race.TranslatedName}}">{{race.TranslatedNameShort}}<br/><span
+                class="fa {{iconForRaceType(race.TranslatedDescription)}}"></span></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let rider of riders" [bgColor]="isSelectedRider(rider.id) ? 'gainsboro' : 'white' "
+              class="align-items-center align-middle">
+            <th class="text-center"><input type="checkbox" id="{{rider.id}}" (change)=selectRider(rider)
+                                           [checked]="isSelectedRider(rider.id)"></th>
+            <th class="rider">{{rider.firstName}} {{rider.lastName}}
+              <div class="hide">
+                <app-rider-card [rider]="rider"></app-rider-card>
+              </div>
+            </th>
+            <th class="px-2 text-center">{{getQuality(rider, 'Cobbles')}}</th>
+            <th class="px-2 text-center">{{getQuality(rider, 'Sprint')}}</th>
+            <th class="px-2 text-center">{{getQuality(rider, 'Hill')}}</th>
+            <th class="px-2 text-center">{{getQuality(rider, 'Climb')}}</th>
+            <th>{{rider.price | currency: 'EUR' : 'symbol': '1.0-0'}}</th>
+            <ng-container *ngIf="rider.team as team">
+              <th class="text-center" title="{{team.name}}"><img style="height: 30px;" src="{{team.tenueUrl}}"/></th>
+            </ng-container>
+            <th class="text-center">{{getNrOfRaces(rider.races) > 0 ? getNrOfRaces(rider.races) : ""}}</th>
+            <th *ngFor="let race of races" class="text-center align-middle"><span
+                class="fa {{getRacingIcon(rider.races, race.EventId)}}"></span></th>
+          </tr>
+          </tbody>
+        </table>
       </div>
-    </th>
-    <th class="px-2 text-center">{{getQuality(rider, 'Cobbles')}}</th>
-    <th class="px-2 text-center">{{getQuality(rider, 'Sprint')}}</th>
-    <th class="px-2 text-center">{{getQuality(rider, 'Hill')}}</th>
-    <th class="px-2 text-center">{{getQuality(rider, 'Climb')}}</th>
-    <th>{{rider.price | currency: 'EUR' : 'symbol': '1.0-0'}}</th>
-    <ng-container *ngIf="rider.team as team">
-      <th class="text-center" title="{{team.name}}"><img style="height: 30px;" src="{{team.tenueUrl}}"/></th>
-    </ng-container>
-    <th class="text-center">{{getNrOfRaces(rider.races) > 0 ? getNrOfRaces(rider.races) : ""}}</th>
-    <th *ngFor="let race of races" class="text-center"><span class="fa {{getRacingIcon(rider.races, race.EventId)}}"></span></th>
-  </tr>
-  </tbody>
-</table>
+    </div>
 
 
-<div class="row p-2 fixed-row-bottom align-items-center border-1 border-light">
-  <div class="col-auto">Budget: {{remainingBudget()  | currency: 'EUR' : 'symbol': '1.0-0'}}</div>
-  <div class="col-auto">Riders selected: {{this.selectedRiders.length}} / 20</div>
-  <div class="col-auto">
-    <div class="position-relative" style="min-width: 4em">
-      <select class="form-control" [(ngModel)]="teamFilter" (ngModelChange)="filterByTeam($event)">
-        <option [ngValue]="null" disabled selected>Filter by team</option>
-        <option *ngFor="let team of teams" [ngValue]="team">{{team.Name}}</option>
-      </select>
-      <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
-            (click)="onTeamClear($event)"></span>
-    </div>
-  </div>
-  <div class="col-auto">
-    <div class="position-relative" style="min-width: 10em">
-      <select class="form-control" [(ngModel)]="riderFilter" (ngModelChange)="filterByRiderType($event)">
-        <option [ngValue]="null" disabled selected>Filter by quality</option>
-        <option *ngFor="let type of riderTypes" [ngValue]="type">{{type}}</option>
-      </select>
-      <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
-            (click)="onQualityClear($event)"></span>
-    </div>
-  </div>
+    <div class="">
+      <div class="row fixed-row-bottom p-2 align-items-center border-1 border-light w-100">
+        <div class="col-auto p-1 rounded m-1" [ngClass]="{'text-danger border border-danger': remainingBudget() < 0}">
+          Budget: {{remainingBudget()  | currency: 'EUR' : 'symbol': '1.0-0'}}</div>
+        <div class="col-auto p-1 rounded m-1"
+             [ngClass]="{'text-danger border border-danger': this.selectedRiders.length > 20}">Riders
+          selected: {{this.selectedRiders.length}} / 20
+        </div>
+        <div class="col-auto">
+          <div class="position-relative" style="min-width: 4em">
+            <select class="form-control" [(ngModel)]="teamFilter" (ngModelChange)="filterByTeam($event)">
+              <option [ngValue]="null" disabled selected>Filter by team</option>
+              <option *ngFor="let team of teams" [ngValue]="team">{{team.Name}}</option>
+            </select>
+            <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
+                  (click)="onTeamClear($event)"></span>
+          </div>
+        </div>
+        <div class="col-auto">
+          <div class="position-relative" style="min-width: 10em">
+            <select class="form-control" [(ngModel)]="riderFilter" (ngModelChange)="filterByRiderType($event)">
+              <option [ngValue]="null" disabled selected>Filter by quality</option>
+              <option *ngFor="let type of riderTypes" [ngValue]="type">{{type}}</option>
+            </select>
+            <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
+                  (click)="onQualityClear($event)"></span>
+          </div>
+        </div>
 
-  <div class="col-auto">
-    <div class="position-relative" style="min-width: 10em">
-      <select class="form-control" [(ngModel)]="priceFilter" (ngModelChange)="filterByPrice($event)">
-        <option [ngValue]="null" disabled selected>Filter by prices</option>
-        <option *ngFor="let price of prices" [ngValue]="price">{{price | currency: 'EUR' : 'symbol': '1.0-0'}}</option>
-      </select>
-      <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
-            (click)="onPriceClear($event)"></span>
+        <div class="col-auto">
+          <div class="position-relative" style="min-width: 10em">
+            <select class="form-control" [(ngModel)]="priceFilter" (ngModelChange)="filterByPrice($event)">
+              <option [ngValue]="null" disabled selected>Filter by prices</option>
+              <option *ngFor="let price of prices"
+                      [ngValue]="price">{{price | currency: 'EUR' : 'symbol': '1.0-0'}}</option>
+            </select>
+            <span class="fa fa-times text-secondary position-absolute" style="top: 0.6rem; right: 0.8rem"
+                  (click)="onPriceClear($event)"></span>
+          </div>
+        </div>
+        <div class="col-auto">
+          <div class="position-relative input-group" style="min-width: 10em">
+            <select class="form-control" [(ngModel)]="selection" (ngModelChange)="loadSelection($event)">
+              <option [ngValue]="null">Load selection</option>
+              <option *ngFor="let selection of selections" [ngValue]="selection">{{selection}}</option>
+            </select>
+            <button class="btn btn-outline-info" (click)="delete(selection)">Delete</button>
+          </div>
+        </div>
+        <div class="col-auto">
+          <div class="position-relative input-group" style="min-width: 10em">
+            <input class="form-control" [(ngModel)]="newSelection">
+            <button class="btn btn-outline-info" (click)="save(newSelection)">Save as new</button>
+          </div>
+        </div>
+      </div>
+
     </div>
+    <!--    <div class="row">-->
+    <!--      <div class="col">Cobbles: {{getNrOf(selectedRiders, 'Cobbles')}}</div>-->
+    <!--      <div class="col">Hills: {{getNrOf(selectedRiders, 'Sprinter')}}</div>-->
+    <!--      <div class="col">Sprint {{getNrOf(selectedRiders, 'Hills')}}</div>-->
+    <!--      <div class="col">Other: </div>-->
+    <!--    </div>-->
   </div>
 </div>
-
-
-

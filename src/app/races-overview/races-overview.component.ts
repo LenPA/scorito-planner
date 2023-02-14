@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {riders} from '../riders';
+import {riders} from '../r';
 import {races} from '../races';
 import {teams} from '../teams';
 import {QualityType, RiderType, ScoritoQuality, ScoritoRace, ScoritoTeam} from "../scorito-types";
@@ -27,15 +27,21 @@ export class RacesOverviewComponent implements OnInit {
 	riderFilter: any = null;
 	priceFilter: any = null;
 
+	selection: string = "default";
+	newSelection: string = "";
+	selections: string[] = Object.keys(localStorage);
+
 	constructor() {
 	}
 
 	ngOnInit(): void {
 		// localStorage.clear();
-		let selectedRiders = localStorage.getItem("selectedRiders");
+		// console.log(localStorage);
+		let selectedRiders = localStorage.getItem("default");
 		this.selectedRiders = !!selectedRiders ? JSON.parse(selectedRiders) : [];
-		console.log(selectedRiders);
+		// console.log(selectedRiders);
 		this.orderBySelectedRiders();
+		// localStorage.setItem("Ewan-no-Trentin", JSON.stringify(this.selectedRiders));
 	}
 
 	orderBySelectedRiders() {
@@ -67,11 +73,15 @@ export class RacesOverviewComponent implements OnInit {
 
 	getRacingIcon(races:{[index: string] : number}, eventId: number) {
 		let race = races[eventId];
-		if(!race) {
+		if (!race) {
 			return ""
 		}
-		else if (race === 1){
+		else if (race === 1) {
+      // IS RACING
 			return "fa-check-circle text-success"
+		} else if (race === 2) {
+      // IS NOT RACING
+			return "fa-times-circle text-danger"
 		}
 		return "fa-question-circle text-muted";
 	}
@@ -145,7 +155,7 @@ export class RacesOverviewComponent implements OnInit {
 		} else {
 			this.selectedRiders.push(rider);
 		}
-		localStorage.setItem("selectedRiders", JSON.stringify(this.selectedRiders));
+		localStorage.setItem(this.selection, JSON.stringify(this.selectedRiders));
 	}
 
 	isSelectedRider(RiderId: number) {
@@ -153,7 +163,7 @@ export class RacesOverviewComponent implements OnInit {
 	}
 
 	remainingBudget() {
-		return (!this.selectedRiders || this.selectedRiders.length === 0) ? 46000000 : 46000000 - this.selectedRiders.map(v => v.price).reduce((a, b) => a + b);
+		return (!this.selectedRiders || this.selectedRiders.length === 0) ? 48000000 : 48000000 - this.selectedRiders.map(v => v.price).reduce((a, b) => a + b);
 	}
 
 
@@ -182,6 +192,7 @@ export class RacesOverviewComponent implements OnInit {
 		this.riderFilter = null;
 		this.riders = riders.filter(v => v.team.id === $event.Id);
 	}
+
 	filterByRiderType($event: any) {
 		this.teamFilter = null;
 		this.priceFilter = null;
@@ -202,10 +213,35 @@ export class RacesOverviewComponent implements OnInit {
 
 	iconForRaceType(type: string) {
 		switch (type) {
-			case "Cobbles specialists": return "fa-chess-board";
+			case "Cobbles": return "fa-chess-board";
 			case "Sprinters": return "fa-bolt";
-			case "Hill specialists": return "fa-caret-up";
+			case "Hills": return "fa-caret-up";
 		}
 		return "";
+	}
+
+	getNrOf(selectedRiders: Rider[], type: string) {
+		return selectedRiders.filter(v => v.type === type).length;
+	}
+
+	loadSelection($event: string) {
+		let riders = localStorage.getItem($event);
+		this.selectedRiders = !!riders ? JSON.parse(riders) : [];
+		this.orderBySelectedRiders();
+	}
+
+	save(selection: string) {
+		localStorage.setItem(selection, JSON.stringify(this.selectedRiders));
+		this.newSelection = "";
+		this.selections = Object.keys(localStorage);
+		this.selection = selection;
+	}
+
+	delete(selection: string) {
+		localStorage.removeItem(selection);
+		let item = localStorage.getItem("default");
+		this.selection = "default";
+		this.selections = Object.keys(localStorage);
+		this.selectedRiders= !!item ? JSON.parse(item) : [];
 	}
 }

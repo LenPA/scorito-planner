@@ -7,6 +7,10 @@
     z-index: 9;
 }
 
+.rider {
+    min-width: 13rem;
+}
+
 .race-title {
 
 }
