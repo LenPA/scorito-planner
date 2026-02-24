@@ -16,6 +16,8 @@ export class RacePlannerComponent implements OnInit {
   allRiders: Rider[] = [];
   selectedRiders: Rider[] = [];
   raceSelections: { [eventId: number]: number[] } = {};
+  raceCaptains: { [eventId: number]: { c1?: number, c2?: number, c3?: number } } = {};
+
   ridersPerRaceMap: { [eventId: number]: Rider[] } = {};
   private triggerRidersCache: { [eventId: number]: { idsStr: string, riders: Rider[] } } = {};
 
@@ -38,7 +40,12 @@ export class RacePlannerComponent implements OnInit {
       this.raceSelections = selections || {};
     });
 
-    // 3. Fetch all riders from Firestore
+    // 3. Subscribe to captain selections
+    this.selectionService.raceCaptains$.subscribe(captains => {
+      this.raceCaptains = captains || {};
+    });
+
+    // 4. Fetch all riders from Firestore
     this.firestoreService.getAllRiders().subscribe((dbRiders) => {
       if (dbRiders && dbRiders.length > 0) {
         this.allRiders = dbRiders.sort((a, b) => b.price - a.price); // sort by highest price
@@ -103,7 +110,6 @@ export class RacePlannerComponent implements OnInit {
         // This will also auto-add them to other races they ride independently.
         if (!this.selectionService.isSelected(riderObj.id)) {
           this.selectionService.addRider(riderObj);
-          this.selectionService.autoAssignRiderToRaces(riderObj.id, riderObj.races);
         }
       }
     });
@@ -112,24 +118,52 @@ export class RacePlannerComponent implements OnInit {
     this.selectionService.updateRaceSelection(eventId, newSelectionIds);
   }
 
+  getCaptainId(eventId: number, captainLevel: 1 | 2 | 3): number | undefined {
+    if (!this.raceCaptains[eventId]) return undefined;
+    return (this.raceCaptains[eventId] as any)[`c${captainLevel}`];
+  }
+
+  onCaptainSelectionChange(eventId: number, captainLevel: 1 | 2 | 3, event: Event) {
+    const target = event.target as HTMLSelectElement;
+    // Provide numeric riderId, or undefined if value was entirely cleared.
+    const val = target.value ? Number(target.value) : undefined;
+    this.selectionService.setCaptain(eventId, captainLevel, val);
+  }
+
+  getCaptainBgColor(eventId: number, captainLevel: 1 | 2 | 3): string {
+    const captainId = this.getCaptainId(eventId, captainLevel);
+    if (!captainId) return '#ffffff'; // white if empty
+
+    const rider = this.allRiders.find(r => r.id === captainId);
+    if (!rider) return '#ffffff';
+
+    return this.getRiderBgColor(rider);
+  }
+
   get remainingBudget(): number {
     return this.selectionService.remainingBudget;
   }
 
   getRiderBgColor(rider: Rider): string {
-    if (rider.price >= 4000000) {
-      return '#ffd700'; // Gold/Yellow
+    if (rider.price >= 7000000) return '#FFD700'; // Pure Pogacar Gold
+
+    // Vibrant colors for premium riders 2M and up
+    const premiumColors = [
+      '#ff7979', '#fada5e', '#48dbfb', '#ff9ff3', '#1dd1a1',
+      '#feca57', '#0abde3', '#10ac84', '#ffda79', '#ff9f43'
+    ];
+
+    // Faded, muted greys/pastels for under 2M riders
+    const basicColors = [
+      '#f8f9fa', '#e9ecef', '#dee2e6', '#ced4da', '#f1f2f6',
+      '#dfe4ea', '#f5f6fa', '#dcdde1', '#c8d6e5', '#ecf0f1'
+    ];
+
+    const baseHash = rider.id ? Math.abs(rider.id) : 0;
+
+    if (rider.price >= 2000000) {
+      return premiumColors[baseHash % premiumColors.length];
     }
-    switch (rider.type) {
-      case 'GC': return '#ffb3ba'; // Pastel Pink
-      case 'Climber': return '#baffc9'; // Pastel Green
-      case 'TT': return '#bae1ff'; // Pastel Blue
-      case 'Sprinter': return '#e0f7fa'; // Pastel Cyan
-      case 'Attacker': return '#ffdfba'; // Pastel Orange
-      case 'Support': return '#e0e0e0'; // Light Grey
-      case 'Cobbles': return '#d3b8ae'; // Light Brown
-      case 'Hills': return '#cbaacb'; // Pastel Purple
-      default: return '#f8f9fa'; // Default Light Grey
-    }
+    return basicColors[baseHash % basicColors.length];
   }
 }

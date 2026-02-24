@@ -2,9 +2,10 @@ import {Component, Input, OnInit} from '@angular/core';
 import {Rider} from "../../types";
 
 @Component({
-	selector: 'app-rider-card',
-	templateUrl: './rider-card.component.html',
-	styleUrls: ['./rider-card.component.css']
+    selector: 'app-rider-card',
+    templateUrl: './rider-card.component.html',
+    styleUrls: ['./rider-card.component.css'],
+    standalone: false
 })
 export class RiderCardComponent implements OnInit {
 

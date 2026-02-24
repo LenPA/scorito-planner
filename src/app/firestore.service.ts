@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector, runInInjectionContext } from '@angular/core';
 import { Firestore, collection, collectionData, setDoc, doc, docData, query } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -8,11 +8,13 @@ import { Rider } from './types';
     providedIn: 'root'
 })
 export class FirestoreService {
-    constructor(private firestore: Firestore) { }
+    constructor(private firestore: Firestore, private injector: Injector) { }
 
     getAllRiders(): Observable<Rider[]> {
-        const ridersRef = collection(this.firestore, 'riders');
-        return collectionData(ridersRef, { idField: 'docId' }) as Observable<Rider[]>;
+        return runInInjectionContext(this.injector, () => {
+            const ridersRef = collection(this.firestore, 'riders');
+            return collectionData(ridersRef, { idField: 'docId' }) as Observable<Rider[]>;
+        });
     }
 
     async saveRider(rider: Rider) {
@@ -31,11 +33,13 @@ export class FirestoreService {
     }
 
     getLastSyncAt(): Observable<Date | null> {
-        const metadataCollection = collection(this.firestore, 'metadata');
-        const syncDoc = doc(metadataCollection, 'ridersSync');
-        return docData(syncDoc).pipe(
-            map((data: any) => data && data["lastSyncAt"] ? new Date(data["lastSyncAt"]) : null)
-        );
+        return runInInjectionContext(this.injector, () => {
+            const metadataCollection = collection(this.firestore, 'metadata');
+            const syncDoc = doc(metadataCollection, 'ridersSync');
+            return docData(syncDoc).pipe(
+                map((data: any) => data && data["lastSyncAt"] ? new Date(data["lastSyncAt"]) : null)
+            );
+        });
     }
 
     async saveLastSyncAt(date: Date) {

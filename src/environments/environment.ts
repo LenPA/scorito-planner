@@ -3,7 +3,17 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  cyclingBaseUrl: "", // empty = use proxy (proxy.conf.json forwards /cycling and /cyclingteammanager)
+  firebase: {
+    apiKey: "AIzaSyDz4JJIAqVzDQYnAOUXYeVFDROL9I-wsBU",
+    authDomain: "scorito-planner.firebaseapp.com",
+    projectId: "scorito-planner",
+    storageBucket: "scorito-planner.firebasestorage.app",
+    messagingSenderId: "309514639904",
+    appId: "1:309514639904:web:7c8cff0382b2b43bf47a45",
+    measurementId: "G-FW51Z77J29"
+  }
 };
 
 /*

@@ -1,10 +1,14 @@
 {
-  "/cycling/*": {
-    "target": "https://cycling.scorito.com/",
-    "secure": true,
-    "logLevel": "info",
-    "changeOrigin": true
-  }
+    "/cycling": {
+        "target": "https://cycling.scorito.com",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/cyclingteammanager": {
+        "target": "https://cycling.scorito.com",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    }
 }
-
-

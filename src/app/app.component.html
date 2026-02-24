@@ -1,7 +1,22 @@
 <!--<app-races-overview></app-races-overview>-->
 <!--<app-rider-json></app-rider-json>-->
-<div class="row">
-  <div class="col-12">
+<div class="container-fluid pt-3 pb-3 bg-light border-bottom">
+  <ul class="nav nav-tabs border-bottom-0">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/overview" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: true}">Squad Overview</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/planner" routerLinkActive="active">Race Planner</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/riders" routerLinkActive="active">Sync Riders</a>
+    </li>
+  </ul>
+</div>
+
+<div class="row m-0 p-2">
+  <div class="col-12 p-0">
     <router-outlet></router-outlet>
   </div>
 </div>

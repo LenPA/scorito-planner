@@ -1,5 +1,6 @@
 <div class="rider-card card position-absolute hide">
-  <h4 class="card-header">{{rider.firstName}} {{rider.lastName}}<span class="float-end"><img style="height: 20px;" src="{{rider.flagUrl}}" title="{{rider.nationality}}" /></span></h4>
+  <h4 class="card-header">{{rider.firstName}} {{rider.lastName}}<span class="float-end"><img style="height: 20px;"
+        src="{{rider.flagUrl}}" title="{{rider.nationality}}" /></span></h4>
   <div class="card-body">
     <div *ngIf="rider.description" class="rider-description mb-2">
       <em>{{rider.description}}</em>

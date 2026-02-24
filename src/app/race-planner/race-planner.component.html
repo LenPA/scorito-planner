@@ -1,4 +1,4 @@
-<div class="container m-0 mt-3">
+<div class="container-fluid px-4 m-0 mt-3">
 
     <div class="row mb-3 align-items-center sticky-top bg-white p-2 border-bottom z-1">
         <div class="col-auto">
@@ -17,6 +17,9 @@
         <thead class="table-light">
             <tr>
                 <th style="width: 200px;">Race</th>
+                <th style="width: 15%;">1st Captain (3x)</th>
+                <th style="width: 15%;">2nd Captain (2.5x)</th>
+                <th style="width: 15%;">3rd Captain (2x)</th>
                 <th>Selected Riders</th>
             </tr>
         </thead>
@@ -27,20 +30,54 @@
                     <small class="text-muted fw-normal">{{ race.TranslatedName }}</small>
                 </td>
                 <td class="px-2">
+                    <select class="form-select form-select-sm border border-secondary"
+                        [ngModel]="getCaptainId(race.EventId, 1)"
+                        [style.backgroundColor]="getCaptainBgColor(race.EventId, 1)"
+                        (change)="onCaptainSelectionChange(race.EventId, 1, $event)">
+                        <option [ngValue]="undefined">--- Select ---</option>
+                        <option *ngFor="let rider of getSortedSelectedRiders(race.EventId)" [value]="rider.id">
+                            {{ rider.lastName }} {{ rider.price >= 7000000 ? '👑' : '' }}
+                        </option>
+                    </select>
+                </td>
+                <td class="px-2">
+                    <select class="form-select form-select-sm border border-secondary"
+                        [ngModel]="getCaptainId(race.EventId, 2)"
+                        [style.backgroundColor]="getCaptainBgColor(race.EventId, 2)"
+                        (change)="onCaptainSelectionChange(race.EventId, 2, $event)">
+                        <option [ngValue]="undefined">--- Select ---</option>
+                        <option *ngFor="let rider of getSortedSelectedRiders(race.EventId)" [value]="rider.id">
+                            {{ rider.lastName }} {{ rider.price >= 7000000 ? '👑' : '' }}
+                        </option>
+                    </select>
+                </td>
+                <td class="px-2">
+                    <select class="form-select form-select-sm border border-secondary"
+                        [ngModel]="getCaptainId(race.EventId, 3)"
+                        [style.backgroundColor]="getCaptainBgColor(race.EventId, 3)"
+                        (change)="onCaptainSelectionChange(race.EventId, 3, $event)">
+                        <option [ngValue]="undefined">--- Select ---</option>
+                        <option *ngFor="let rider of getSortedSelectedRiders(race.EventId)" [value]="rider.id">
+                            {{ rider.lastName }} {{ rider.price >= 7000000 ? '👑' : '' }}
+                        </option>
+                    </select>
+                </td>
+                <td class="px-2">
                     <div class="d-flex align-items-center">
                         <!-- Render sorted selected riders visibly in the table cell -->
                         <div class="d-flex flex-wrap gap-1 flex-grow-1">
                             <span *ngFor="let rider of getSortedSelectedRiders(race.EventId)"
-                                class="badge py-1 px-2 fw-normal text-dark border border-secondary align-content-center"
+                                class="badge py-1 px-2 text-dark align-content-center border"
+                                [ngClass]="{'fw-bold shadow-sm': rider.price >= 2000000, 'fw-normal': rider.price < 2000000, 'border-dark': rider.price >= 7000000, 'border-secondary': rider.price < 7000000}"
                                 [style.backgroundColor]="getRiderBgColor(rider)"
                                 style="font-size: 0.9em; min-width: 80px; text-align: center;">
-                                {{ rider.shortName }}
+                                {{ rider.shortName }} <span *ngIf="rider.price >= 7000000">👑</span>
                             </span>
                         </div>
 
                         <!-- Multiselect button picker overlay -->
                         <mat-select class="ms-3 border border-secondary shadow-sm rounded p-2 flex-shrink-0 bg-white"
-                            style="width: 220px; cursor: pointer;" multiple
+                            style="width: 260px; cursor: pointer;" multiple
                             [placeholder]="'Click to add/remove riders...'"
                             [ngModel]="getSelectedRiderIdsForRace(race.EventId)"
                             (ngModelChange)="onRaceSelectionChange(race.EventId, $event)">
@@ -52,12 +89,15 @@
                             </mat-select-trigger>
 
                             <mat-option *ngFor="let rider of getRidersForRace(race.EventId)" [value]="rider.id">
-                                <div class="d-flex justify-content-between align-items-center w-100 pe-2">
+                                <div class="d-flex justify-content-between align-items-center w-100 pe-2"
+                                    [ngClass]="{'fw-bold': rider.price >= 2000000}">
                                     <span>
-                                        <span class="d-inline-block rounded-circle border border-secondary me-2"
+                                        <span class="d-inline-block rounded-circle border me-2"
+                                            [ngClass]="{'border-dark shadow-sm': rider.price >= 7000000, 'border-secondary': rider.price < 7000000}"
                                             [style.backgroundColor]="getRiderBgColor(rider)"
                                             style="width: 12px; height: 12px; vertical-align: baseline;"></span>
-                                        {{ rider.lastName }}, {{ rider.firstName }}
+                                        {{ rider.lastName }}, {{ rider.firstName }} <span
+                                            *ngIf="rider.price >= 7000000">👑</span>
                                     </span>
                                     <span class="text-muted small ms-2">{{ rider.price |
                                         currency:'EUR':'symbol':'1.0-0':'nl-NL' }}</span>

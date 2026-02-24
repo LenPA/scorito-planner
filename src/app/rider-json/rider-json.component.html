@@ -1,1 +1,25 @@
-{{output | json}}
+<div class="p-3">
+    <div class="d-flex align-items-center mb-3">
+        <button class="btn btn-primary" (click)="syncFromScorito()" [disabled]="isSyncing">
+            <span *ngIf="isSyncing" class="spinner-border spinner-border-sm me-2" role="status"
+                aria-hidden="true"></span>
+            {{ isSyncing ? 'Syncing...' : 'Sync data' }}
+        </button>
+        <div class="text-muted ms-3" *ngIf="lastSyncAt && !isSyncing">
+            Last sync: {{lastSyncAt.toLocaleString()}}
+        </div>
+    </div>
+
+    <div *ngIf="isSyncing" class="mb-3" style="max-width: 400px;">
+        <div class="d-flex justify-content-between mb-1">
+            <small>Syncing riders to Firebase...</small>
+            <small>{{syncProgress}} / {{totalRidersToSync}}</small>
+        </div>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                [style.width.%]="totalRidersToSync ? (syncProgress / totalRidersToSync) * 100 : 0"
+                [attr.aria-valuenow]="syncProgress" aria-valuemin="0" [attr.aria-valuemax]="totalRidersToSync">
+            </div>
+        </div>
+    </div>
+</div>
