@@ -1,0 +1,72 @@
+<div class="container m-0 mt-3">
+
+    <div class="row mb-3 align-items-center sticky-top bg-white p-2 border-bottom z-1">
+        <div class="col-auto">
+            <h4 class="mb-0">Race Planner</h4>
+        </div>
+        <div class="col-auto ms-auto p-1 rounded" [ngClass]="{'text-danger border border-danger': remainingBudget < 0}">
+            <strong>Budget:</strong> {{ remainingBudget | currency:'EUR':'symbol':'1.0-0':'nl-NL' }}
+        </div>
+        <div class="col-auto p-1 rounded click-cursor"
+            [ngClass]="{'text-danger border border-danger': selectedRiders.length > 20}">
+            <strong>Riders:</strong> {{ selectedRiders.length }} / 20
+        </div>
+    </div>
+
+    <table class="table table-sm table-hover table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 200px;">Race</th>
+                <th>Selected Riders</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let race of races">
+                <td class="fw-bold px-2 py-3 bg-light">
+                    <div>{{ race.TranslatedNameShort }}</div>
+                    <small class="text-muted fw-normal">{{ race.TranslatedName }}</small>
+                </td>
+                <td class="px-2">
+                    <div class="d-flex align-items-center">
+                        <!-- Render sorted selected riders visibly in the table cell -->
+                        <div class="d-flex flex-wrap gap-1 flex-grow-1">
+                            <span *ngFor="let rider of getSortedSelectedRiders(race.EventId)"
+                                class="badge py-1 px-2 fw-normal text-dark border border-secondary align-content-center"
+                                [style.backgroundColor]="getRiderBgColor(rider)"
+                                style="font-size: 0.9em; min-width: 80px; text-align: center;">
+                                {{ rider.shortName }}
+                            </span>
+                        </div>
+
+                        <!-- Multiselect button picker overlay -->
+                        <mat-select class="ms-3 border border-secondary shadow-sm rounded p-2 flex-shrink-0 bg-white"
+                            style="width: 220px; cursor: pointer;" multiple
+                            [placeholder]="'Click to add/remove riders...'"
+                            [ngModel]="getSelectedRiderIdsForRace(race.EventId)"
+                            (ngModelChange)="onRaceSelectionChange(race.EventId, $event)">
+
+                            <mat-select-trigger>
+                                <span class="fw-bold text-dark w-100 d-inline-block text-center">
+                                    Edit Squad ({{ getSelectedRiderIdsForRace(race.EventId).length }})
+                                </span>
+                            </mat-select-trigger>
+
+                            <mat-option *ngFor="let rider of getRidersForRace(race.EventId)" [value]="rider.id">
+                                <div class="d-flex justify-content-between align-items-center w-100 pe-2">
+                                    <span>
+                                        <span class="d-inline-block rounded-circle border border-secondary me-2"
+                                            [style.backgroundColor]="getRiderBgColor(rider)"
+                                            style="width: 12px; height: 12px; vertical-align: baseline;"></span>
+                                        {{ rider.lastName }}, {{ rider.firstName }}
+                                    </span>
+                                    <span class="text-muted small ms-2">{{ rider.price |
+                                        currency:'EUR':'symbol':'1.0-0':'nl-NL' }}</span>
+                                </div>
+                            </mat-option>
+                        </mat-select>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
