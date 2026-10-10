@@ -50,6 +50,8 @@ export class RacePlannerComponent implements OnInit {
       if (dbRiders && dbRiders.length > 0) {
         this.allRiders = dbRiders.sort((a, b) => b.price - a.price); // sort by highest price
         this.buildRidersPerRaceMap();
+        this.triggerRidersCache = {}; // invalidate cache when DB updates
+        this.selectionService.syncWithDatabase(this.allRiders);
       }
     });
   }

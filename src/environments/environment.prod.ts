@@ -2,7 +2,7 @@ export const environment = {
   production: true,
   cyclingBaseUrl: "https://cycling.scorito.com",
   firebase: {
-    apiKey: "apikey,
+    apiKey: "AIzaSyAT36k7sJstGizRF6pLeohmyiR-ay0iIuo",
     authDomain: "scorito-planner.firebaseapp.com",
     projectId: "scorito-planner",
     storageBucket: "scorito-planner.firebasestorage.app",

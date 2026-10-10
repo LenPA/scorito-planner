@@ -15,7 +15,7 @@ export class SelectionService {
     private raceCaptainsSource = new BehaviorSubject<{ [eventId: number]: { c1?: number, c2?: number, c3?: number } }>({});
     raceCaptains$ = this.raceCaptainsSource.asObservable();
 
-    private readonly BUDGET_LIMIT = 48000000;
+    private readonly BUDGET_LIMIT = 45000000;
     private readonly RIDER_LIMIT = 20;
 
     constructor() {
@@ -82,7 +82,7 @@ export class SelectionService {
     }
 
     get remainingBudget(): number {
-        const spent = this.selectedRiders.reduce((acc, rider) => acc + rider.price, 0);
+        const spent = this.selectedRiders.reduce((acc, rider) => acc + Number(rider.price), 0);
         return this.BUDGET_LIMIT - spent;
     }
 
@@ -146,6 +146,67 @@ export class SelectionService {
 
         this.raceCaptainsSource.next(current);
         this.saveCaptainsToStorage('default_race_captains', current);
+    }
+
+    syncWithDatabase(dbRiders: Rider[]) {
+        let selectedModified = false;
+        const newSelected: Rider[] = [];
+        const toRemove: Rider[] = [];
+
+        this.selectedRiders.forEach(selRider => {
+            const dbRider = dbRiders.find(r => r.id === selRider.id);
+            if (dbRider) {
+                if (dbRider.races) {
+                    this.autoAssignRiderToRaces(dbRider.id, dbRider.races);
+                }
+                if (JSON.stringify(selRider) !== JSON.stringify(dbRider)) {
+                    selectedModified = true;
+                    newSelected.push(dbRider);
+                } else {
+                    newSelected.push(selRider);
+                }
+            } else {
+                // Rider no longer in database, mark for complete removal
+                toRemove.push(selRider);
+            }
+        });
+
+        if (toRemove.length > 0) {
+            selectedModified = true;
+            const currentRaceSelections = { ...this.raceSelections };
+            const currentCaptains = { ...this.raceCaptains };
+            let modifiedSelections = false;
+            let modifiedCaptains = false;
+
+            toRemove.forEach(removedRider => {
+                Object.keys(currentRaceSelections).forEach(key => {
+                    const eventId = Number(key);
+                    if (currentRaceSelections[eventId] && currentRaceSelections[eventId].includes(removedRider.id)) {
+                        currentRaceSelections[eventId] = currentRaceSelections[eventId].filter(id => id !== removedRider.id);
+                        modifiedSelections = true;
+                    }
+                    if (currentCaptains[eventId]) {
+                        if (currentCaptains[eventId].c1 === removedRider.id) { currentCaptains[eventId].c1 = undefined; modifiedCaptains = true; }
+                        if (currentCaptains[eventId].c2 === removedRider.id) { currentCaptains[eventId].c2 = undefined; modifiedCaptains = true; }
+                        if (currentCaptains[eventId].c3 === removedRider.id) { currentCaptains[eventId].c3 = undefined; modifiedCaptains = true; }
+                    }
+                });
+            });
+
+            if (modifiedSelections) {
+                this.raceSelectionsSource.next(currentRaceSelections);
+                this.saveRaceSelectionsToStorage('default_race_selections', currentRaceSelections);
+            }
+            if (modifiedCaptains) {
+                this.raceCaptainsSource.next(currentCaptains);
+                this.saveCaptainsToStorage('default_race_captains', currentCaptains);
+            }
+        }
+
+        if (selectedModified) {
+            this.selectedRiderssource.next(newSelected);
+            this.saveToStorage('default', newSelected);
+        }
     }
 
     autoAssignRiderToRaces(riderId: number, riderRaceData: { [eventId: string]: number }) {
