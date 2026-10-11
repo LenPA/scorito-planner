@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { races } from '../races';
-import { ridersRaw } from '../riders-2023';
 import { teams } from '../teams';
 import { ScoritoQuality, QualityType, ScoritoRace, ScoritoRider, ScoritoTeam } from "../scorito-types";
 import { ScoritoQueryGateway } from "../scorito-query-gateway";
@@ -17,7 +16,6 @@ export class RiderJsonComponent implements OnInit {
 
 	displayedColumns: string[] = ["Rider.Name"].concat(races.map(v => v.EventId + ""));
 	rider: any;
-	riders: ScoritoRider[] = ridersRaw;
 	output: any = [];
 	lastSyncAt: Date | null = null;
 	isSyncing: boolean = false;
@@ -112,11 +110,6 @@ export class RiderJsonComponent implements OnInit {
 		return mappedRider;
 	}
 
-	filterRiders(): void {
-		// to combine ridersRaw and races
-		// this.riders = this.riders.filter(v => v.RiderId === 6357);
-		this.riders = this.riders.filter(v => v.RiderId === 1225);
-	}
 
 	private mapQualities(Qualities: ScoritoQuality[] | undefined) {
 		let mappedQualities: { [index: string]: number } = {};

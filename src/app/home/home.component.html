@@ -1,0 +1,75 @@
+<div class="hub-container">
+  <!-- Hero Section -->
+  <header class="hub-hero">
+    <div class="hero-badge">
+      <i class="fas fa-flag-checkered me-2"></i> Scorito Wieler Manager
+    </div>
+    <h1 class="hero-title">Kies je Wielerplanner</h1>
+    <p class="hero-subtitle">
+      Selecteer je favoriete wielerspel, plan je 20 renners binnen het budget en optimaliseer je opstelling per koers.
+    </p>
+  </header>
+
+  <!-- 4 Big Square Cards Grid -->
+  <main class="games-grid">
+    <article
+      *ngFor="let game of games"
+      [routerLink]="game.route"
+      class="game-card {{ game.colorClass }}"
+      [class.card-inactive]="!game.isActive"
+      [attr.aria-label]="game.title">
+
+      <!-- Background Watermark Icon -->
+      <div class="card-watermark" aria-hidden="true">
+        <i class="fas {{ game.icon }}"></i>
+      </div>
+
+      <!-- Card Inner Content -->
+      <div class="card-content">
+        <!-- Top Metadata Row -->
+        <div class="card-header-row">
+          <span class="badge-jersey">{{ game.badge }}</span>
+          <span class="edition-tag">{{ game.edition }}</span>
+        </div>
+
+        <!-- Center Icon & Title -->
+        <div class="card-body-section">
+          <div class="icon-circle">
+            <i class="fas {{ game.icon }}"></i>
+          </div>
+          <h2 class="game-title">{{ game.title }}</h2>
+          <p class="game-subtitle">{{ game.subtitle }}</p>
+        </div>
+
+        <!-- Bottom Action Row -->
+        <div class="card-footer-row">
+          <div class="status-indicator">
+            <span class="status-dot" [class.dot-active]="game.isActive"></span>
+            <span class="status-label">{{ game.statusText }}</span>
+          </div>
+
+          <div class="action-btn">
+            <span>Open</span>
+            <i class="fas fa-arrow-right arrow-icon"></i>
+          </div>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Feature Highlights Footer -->
+  <footer class="hub-features">
+    <div class="feature-item">
+      <i class="fas fa-wallet feature-icon"></i>
+      <span>Budget & Capitein Calculatie</span>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-chart-line feature-icon"></i>
+      <span>Rennersstatistieken & Kwaliteiten</span>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-cloud-upload-alt feature-icon"></i>
+      <span>Live Cloud Sync met Firebase</span>
+    </div>
+  </footer>
+</div>

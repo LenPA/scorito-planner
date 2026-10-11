@@ -16,6 +16,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { RiderJsonComponent } from './rider-json/rider-json.component';
 import { RiderCardComponent } from './races-overview/rider-card/rider-card.component';
 import { TeamSummaryComponent } from './team-summary/team-summary.component';
+import { HomeComponent } from './home/home.component';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
@@ -25,6 +26,7 @@ registerLocaleData(localeNl, 'nl-NL');
 @NgModule({
     declarations: [
         AppComponent,
+        HomeComponent,
         RacesOverviewComponent,
         RiderJsonComponent,
         RiderCardComponent,

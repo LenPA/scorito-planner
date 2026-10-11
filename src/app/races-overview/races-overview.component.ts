@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { riders } from '../r';
 import { races } from '../races';
 import { teams } from '../teams';
 import { QualityType, RiderType, ScoritoQuality, ScoritoRace, ScoritoTeam } from "../scorito-types";
@@ -22,8 +21,8 @@ export class RacesOverviewComponent implements OnInit {
 
 	displayedColumns: string[] = ["Rider.Name"].concat(races.map(v => v.EventId + ""));
 	rider: any;
-	allRiders: Rider[] = riders;
-	riders: Rider[] = riders;
+	allRiders: Rider[] = [];
+	riders: Rider[] = [];
 	races: ScoritoRace[] = races.sort((a, b) => a.StartDate > b.StartDate ? 1 : -1);
 	// teams: Team[] = teams.filter(v => !["BCS", "PBS", "MCT", "CJR", "DHA", "DKO", "BCF"].includes(v.Abbreviation));
 	teams: ScoritoTeam[] = teams.filter(v => ["QSA", "TJV", "LTS", "EFE", "MOV", "AQT", "SVB", "IGD", "COF",
@@ -57,19 +56,9 @@ export class RacesOverviewComponent implements OnInit {
 		});
 
 		// Load riders from Firestore
-		let seededFirestore = false;
 		this.firestoreService.getAllRiders().subscribe(
 			(dbRiders) => {
-				if (!dbRiders || dbRiders.length === 0) {
-					if (!seededFirestore) {
-						seededFirestore = true;
-						this.firestoreService.saveRidersBatch(this.riders).catch(error => {
-							console.error("Error seeding riders to DB", error);
-						});
-					}
-					return;
-				}
-				if (dbRiders.length > 0) {
+				if (dbRiders && dbRiders.length > 0) {
 					console.log("Loaded riders from DB:", dbRiders.length);
 					this.riders = dbRiders;
 					this.allRiders = dbRiders;
