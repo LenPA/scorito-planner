@@ -1,6 +1,8 @@
 .app-navbar {
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
   z-index: 1020;
 }
 
@@ -13,25 +15,25 @@
 }
 
 .brand-icon-wrapper {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .brand-icon {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
 }
 
 .brand-name {
   font-weight: 900;
-  font-size: 1.1rem;
-  letter-spacing: -0.02em;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
   color: #0f172a;
   line-height: 1.1;
 }
@@ -41,30 +43,31 @@
 }
 
 .brand-sub {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .nav-divider {
   width: 1px;
-  height: 24px;
+  height: 22px;
   background-color: #e2e8f0;
-  margin: 0 0.4rem;
+  margin: 0 0.25rem;
 }
 
 .nav-pill-btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.45rem 0.85rem;
+  padding: 0.42rem 0.85rem;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #475569;
   text-decoration: none;
   border-radius: 10px;
   transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .nav-pill-btn:hover {
@@ -73,9 +76,33 @@
 }
 
 .nav-pill-btn.active {
-  background-color: #eff6ff;
-  color: #2563eb;
-  font-weight: 700;
+  background-color: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+.race-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-classics { background-color: #3b82f6; }
+.dot-giro { background-color: #ec4899; }
+.dot-tour { background-color: #eab308; }
+.dot-vuelta { background-color: #ef4444; }
+
+.pill-giro.active {
+  background-color: #be185d;
+  color: #fff;
+}
+.pill-tour.active {
+  background-color: #eab308;
+  color: #0f172a;
+}
+.pill-vuelta.active {
+  background-color: #dc2626;
+  color: #fff;
 }
 
 .app-main-content {

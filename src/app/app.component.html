@@ -1,4 +1,4 @@
-<header class="app-navbar border-bottom bg-white shadow-sm sticky-top">
+<header class="app-navbar border-bottom sticky-top">
   <div class="container-fluid px-3 px-md-4 py-2 d-flex justify-content-between align-items-center">
     <a routerLink="/" class="brand-link d-flex align-items-center text-decoration-none">
       <div class="brand-icon-wrapper me-2">
@@ -10,27 +10,36 @@
       </div>
     </a>
 
-    <nav class="d-flex align-items-center gap-2">
+    <nav class="d-flex align-items-center gap-2 flex-wrap">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
         class="nav-pill-btn">
         <i class="fas fa-th-large me-1"></i>
-        <span>Home</span>
+        <span>Overzicht</span>
       </a>
 
       <div class="nav-divider d-none d-sm-block"></div>
 
+      <!-- Klassiekers Section -->
+      <a routerLink="/planner" routerLinkActive="active" class="nav-pill-btn" title="Voorjaarsklassiekers Planner">
+        <span class="race-dot dot-classics me-1"></span>
+        <span>Klassiekers</span>
+      </a>
+
+      <div class="nav-divider d-none d-sm-block"></div>
+
+      <!-- Grote Rondes Section -->
       <div class="nav-subgroup d-flex align-items-center gap-1">
-        <a routerLink="/planner" routerLinkActive="active" class="nav-pill-btn">
-          <i class="fas fa-calendar-alt me-1"></i>
-          <span>Race Planner</span>
+        <a routerLink="/grand-tour/giro" routerLinkActive="active" class="nav-pill-btn pill-giro" title="Giro d'Italia 21 Etappes">
+          <span class="race-dot dot-giro me-1"></span>
+          <span>Giro</span>
         </a>
-        <a routerLink="/overview" routerLinkActive="active" class="nav-pill-btn">
-          <i class="fas fa-users me-1"></i>
-          <span>Squad Overview</span>
+        <a routerLink="/grand-tour/tour" routerLinkActive="active" class="nav-pill-btn pill-tour" title="Tour de France 21 Etappes">
+          <span class="race-dot dot-tour me-1"></span>
+          <span>Tour</span>
         </a>
-        <a routerLink="/riders" routerLinkActive="active" class="nav-pill-btn">
-          <i class="fas fa-sync me-1"></i>
-          <span>Data Sync</span>
+        <a routerLink="/grand-tour/vuelta" routerLinkActive="active" class="nav-pill-btn pill-vuelta" title="Vuelta a España 21 Etappes">
+          <span class="race-dot dot-vuelta me-1"></span>
+          <span>Vuelta</span>
         </a>
       </div>
     </nav>

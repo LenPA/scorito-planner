@@ -1,0 +1,629 @@
+<div class="grand-tour-wrapper {{ activeTourInfo.gradientClass }}">
+
+  <!-- Top Hero Banner -->
+  <header class="tour-header">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 py-3">
+
+        <!-- Tour Identity -->
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="country-flag">{{ activeTourInfo.flag }}</span>
+            <span class="tour-nickname">{{ activeTourInfo.nickname }}</span>
+            <span class="badge-edition">Seizoen 2026 / 2027</span>
+          </div>
+          <h1 class="tour-title">{{ activeTourInfo.name }}</h1>
+        </div>
+
+        <!-- Tour Selector Switcher -->
+        <div class="tour-switch-group">
+          <button
+            *ngFor="let t of tourOptions"
+            (click)="changeTourTab(t.id)"
+            class="tour-pill-btn"
+            [class.active]="activeTourId === t.id"
+            [attr.aria-label]="t.name">
+            <span class="me-1">{{ t.flag }}</span>
+            <span>{{ t.name }}</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Quick KPI Tracker Row -->
+      <div class="kpi-banner-row">
+        <!-- Budget Tracker -->
+        <div class="kpi-card">
+          <div class="kpi-label"><i class="fas fa-wallet me-1"></i> Resterend Budget</div>
+          <div class="kpi-value" [class.text-danger]="gtService.remainingBudget < 0">
+            {{ formatPrice(gtService.remainingBudget) }}
+          </div>
+          <div class="kpi-sub">van {{ formatPrice(gtService.BUDGET_LIMIT) }}</div>
+        </div>
+
+        <!-- Squad Tracker -->
+        <div class="kpi-card" (click)="activeTab = 'squad'" role="button" title="Klik om selectie te bewerken">
+          <div class="kpi-label"><i class="fas fa-users me-1"></i> Geselecteerde Renners</div>
+          <div class="kpi-value">{{ squad.length }} / {{ gtService.MAX_SQUAD_RIDERS }}</div>
+          <div class="kpi-sub">{{ gtService.MAX_SQUAD_RIDERS - squad.length }} plekken vrij</div>
+        </div>
+
+        <!-- Estimated Classification Points -->
+        <div class="kpi-card" (click)="activeTab = 'classifications'" role="button" title="Bekijk klassementen">
+          <div class="kpi-label"><i class="fas fa-trophy me-1"></i> Verwachte Klassementspunten</div>
+          <div class="kpi-value text-accent">{{ gtService.calculateEstimatedClassificationPoints() }} pt</div>
+          <div class="kpi-sub">uit voorspelde topklasseringen</div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="tour-nav-tabs mt-3">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'stages'"
+          (click)="activeTab = 'stages'">
+          <i class="fas fa-calendar-check me-2"></i> 21 Etappes (9 renners)
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'classifications'"
+          (click)="activeTab = 'classifications'">
+          <i class="fas fa-medal me-2"></i> Klassementen Voorspellen
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'matrix'"
+          (click)="activeTab = 'matrix'">
+          <i class="fas fa-th me-2"></i> Etappes Matrix
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'squad'"
+          (click)="activeTab = 'squad'">
+          <i class="fas fa-user-plus me-2"></i> Selectie ({{ squad.length }}/20)
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- Main Body Content -->
+  <main class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: 21 ETAPPES PLANNER (9 RENNER OPSTELLING)                -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'stages'" class="tab-stages-content">
+
+      <!-- Horizontal 21 Stage Stepper -->
+      <div class="stage-stepper-container mb-4">
+        <div class="stage-stepper">
+          <div
+            *ngFor="let stage of activeTourInfo.stages"
+            (click)="selectedStageNumber = stage.stageNumber"
+            class="stage-chip"
+            [class.active]="selectedStageNumber === stage.stageNumber"
+            [class.complete]="(stageLineups[stage.stageNumber]?.riderIds?.length || 0) === 9">
+            <div class="chip-number">E{{ stage.stageNumber }}</div>
+            <div class="chip-badge {{ getStageBadgeClass(stage.stageType) }}">
+              {{ stage.stageType === 'flat' ? 'Vlak' : stage.stageType === 'mountain' ? 'Berg' : stage.stageType === 'time_trial' ? 'TT' : 'Heuvel' }}
+            </div>
+            <div class="chip-count">
+              <i class="fas fa-user-check me-1"></i>{{ stageLineups[stage.stageNumber]?.riderIds?.length || 0 }}/9
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Stage Detailed View -->
+      <div class="row g-4">
+
+        <!-- Left Column: The 9-Rider Daily Lineup -->
+        <div class="col-12 col-xl-7">
+          <div class="stage-lineup-card">
+
+            <!-- Stage Header Info -->
+            <div class="stage-card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="d-flex align-items-center gap-3">
+                <button (click)="goToPrevStage()" [disabled]="selectedStageNumber <= 1" class="btn-stage-arrow" title="Vorige etappe">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="stage-pill {{ getStageBadgeClass(activeStage.stageType) }}">
+                      {{ getStageTypeName(activeStage.stageType) }}
+                    </span>
+                    <span class="stage-distance">{{ activeStage.distanceKm }} km</span>
+                  </div>
+                  <h2 class="stage-header-title">Etappe {{ activeStage.stageNumber }}</h2>
+                  <p class="stage-header-sub text-muted mb-0">{{ activeStage.description }}</p>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <div class="lineup-counter-badge" [class.counter-full]="isCurrentStageFull">
+                  <i class="fas fa-check-circle me-1"></i>
+                  <span>{{ currentStageLineup.riderIds.length }} / 9 renners</span>
+                </div>
+                <button (click)="goToNextStage()" [disabled]="selectedStageNumber >= 21" class="btn-stage-arrow" title="Volgende etappe">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- The 9 Lineup Slots (3x3 grid) -->
+            <div class="stage-slots-grid my-3">
+              <!-- Filled Slots -->
+              <div
+                *ngFor="let r of currentStageRiders"
+                class="lineup-slot-card filled-slot"
+                [class.is-captain]="isRiderStageCaptain(r.id)">
+
+                <div class="slot-captain-badge" (click)="setCaptain(r.id)" role="button" title="Maak dagkopman">
+                  <i class="fas fa-star" [class.star-active]="isRiderStageCaptain(r.id)"></i>
+                  <span *ngIf="isRiderStageCaptain(r.id)" class="ms-1">Kopman</span>
+                </div>
+
+                <button class="slot-remove-btn" (click)="toggleRiderInActiveStage(r.id)" title="Verwijder uit opstelling">
+                  <i class="fas fa-times"></i>
+                </button>
+
+                <div class="slot-rider-body">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="slot-jersey" alt="Jersey">
+                  <div class="slot-rider-name">{{ r.shortName }}</div>
+                  <div class="slot-rider-meta">
+                    <span class="slot-price">{{ formatPrice(r.price) }}</span>
+                    <span class="slot-team text-muted">{{ r.team?.shortName || r.type }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty Placeholder Slots (up to 9) -->
+              <div
+                *ngFor="let emptyIndex of [].constructor(gtService.MAX_STAGE_RIDERS - currentStageLineup.riderIds.length); let i = index"
+                class="lineup-slot-card empty-slot">
+                <div class="empty-icon-circle"><i class="fas fa-plus"></i></div>
+                <span class="empty-label">Plek {{ currentStageLineup.riderIds.length + i + 1 }}</span>
+                <small class="text-muted">Kies uit je 20 renners</small>
+              </div>
+            </div>
+
+            <div class="stage-lineup-footer text-muted d-flex justify-content-between align-items-center">
+              <small><i class="fas fa-info-circle me-1"></i> Klik op de gouden ster ⭐ om je <strong>Dagkopman</strong> aan te wijzen.</small>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right Column: Squad Quick Selector (Pick from your 20) -->
+        <div class="col-12 col-xl-5">
+          <div class="squad-selector-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="selector-title">
+                <i class="fas fa-users text-primary me-2"></i>Jouw Selectie ({{ squad.length }}/20)
+              </h3>
+              <button class="btn btn-sm btn-outline-primary" (click)="activeTab = 'squad'">
+                <i class="fas fa-user-edit me-1"></i>Bewerk Selectie
+              </button>
+            </div>
+
+            <div *ngIf="squad.length === 0" class="empty-squad-notice text-center p-4">
+              <i class="fas fa-exclamation-triangle text-warning fs-3 mb-2"></i>
+              <h5>Nog geen renners in je selectie!</h5>
+              <p class="text-muted small">Ga naar het tabblad "Selectie" om eerst jouw 20 renners te kiezen.</p>
+              <button class="btn btn-primary btn-sm" (click)="activeTab = 'squad'">Kies 20 Renners</button>
+            </div>
+
+            <!-- Squad Rider List with 1-Click Stage Toggle -->
+            <div *ngIf="squad.length > 0" class="squad-quick-list">
+              <div
+                *ngFor="let r of squad"
+                class="squad-rider-row"
+                [class.in-stage]="isRiderInCurrentStage(r.id)">
+
+                <div class="d-flex align-items-center gap-2">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb" alt="Jersey">
+                  <div>
+                    <div class="rider-row-name">
+                      {{ r.shortName }}
+                      <span *ngIf="isRiderStageCaptain(r.id)" class="badge bg-warning text-dark ms-1">⭐ Kopman</span>
+                    </div>
+                    <div class="rider-row-sub">
+                      <span class="badge bg-light text-dark me-1">{{ r.type || 'Allrounder' }}</span>
+                      <span class="text-muted small">{{ formatPrice(r.price) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-secondary-subtle text-secondary small" title="Aantal etappes geselecteerd">
+                    {{ gtService.getRiderStageCount(r.id) }}/21 ritten
+                  </span>
+
+                  <button
+                    class="btn btn-sm btn-action-toggle"
+                    [class.btn-success]="isRiderInCurrentStage(r.id)"
+                    [class.btn-outline-primary]="!isRiderInCurrentStage(r.id)"
+                    [disabled]="!isRiderInCurrentStage(r.id) && isCurrentStageFull"
+                    (click)="toggleRiderInActiveStage(r.id)">
+                    <i class="fas" [class.fa-check]="isRiderInCurrentStage(r.id)" [class.fa-plus]="!isRiderInCurrentStage(r.id)"></i>
+                    <span class="ms-1">{{ isRiderInCurrentStage(r.id) ? 'Opgesteld' : 'Stel op' }}</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: KLASSEMENTEN VOORSPELLER                               -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'classifications'" class="tab-classifications-content">
+
+      <!-- Header & Score Calculator -->
+      <div class="classifications-hero mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div>
+            <h2 class="section-heading mb-1">Klassementen Voorspeller</h2>
+            <p class="text-muted mb-0">
+              Wijs renners toe aan de eindklasseringen. Scorito keert flinke punten uit voor renners die in de top eindigen!
+            </p>
+          </div>
+          <div class="total-points-card">
+            <span class="points-label">Verwachte Punten van jouw team:</span>
+            <span class="points-number">{{ gtService.calculateEstimatedClassificationPoints() }} pt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Classification Boards -->
+      <div class="row g-4">
+
+        <!-- 1. Algemeen Klassement (Top 20) -->
+        <div class="col-12 col-lg-6 col-xl-3">
+          <div class="class-board-card board-general">
+            <div class="board-header">
+              <div class="jersey-icon-circle gc-circle"><i class="fas fa-trophy"></i></div>
+              <div>
+                <h3 class="board-title">{{ activeTourInfo.leaderJerseyName }}</h3>
+                <span class="board-sub">Algemeen Klassement (Top 20)</span>
+              </div>
+            </div>
+
+            <div class="class-slots-list">
+              <div *ngFor="let tier of scoritoPoints.general" class="class-slot-row">
+                <div class="slot-rank-box" [class.rank-podium]="tier.position <= 3">
+                  {{ tier.position }}
+                </div>
+                <div class="slot-select-wrapper">
+                  <select
+                    class="form-select form-select-sm class-select"
+                    [value]="gtService.classifications.general[tier.position] || ''"
+                    (change)="onClassificationChange('general', tier.position, $event)">
+                    <option value="">-- Kies renner --</option>
+                    <optgroup label="Jouw Selectie (20)">
+                      <option *ngFor="let r of squad" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </optgroup>
+                    <optgroup label="Overig Peloton">
+                      <option *ngFor="let r of allPelotonRiders" [value]="r.id">{{ r.shortName }} ({{ r.team?.shortName }})</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="slot-points-tag">+{{ tier.points }} pt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Puntenklassement (Top 5) -->
+        <div class="col-12 col-lg-6 col-xl-3">
+          <div class="class-board-card board-points">
+            <div class="board-header">
+              <div class="jersey-icon-circle points-circle"><i class="fas fa-bolt"></i></div>
+              <div>
+                <h3 class="board-title">{{ activeTourInfo.pointsJerseyName }}</h3>
+                <span class="board-sub">Puntenklassement (Top 5)</span>
+              </div>
+            </div>
+
+            <div class="class-slots-list">
+              <div *ngFor="let tier of scoritoPoints.points" class="class-slot-row">
+                <div class="slot-rank-box" [class.rank-podium]="tier.position <= 3">
+                  {{ tier.position }}
+                </div>
+                <div class="slot-select-wrapper">
+                  <select
+                    class="form-select form-select-sm class-select"
+                    [value]="gtService.classifications.points[tier.position] || ''"
+                    (change)="onClassificationChange('points', tier.position, $event)">
+                    <option value="">-- Kies renner --</option>
+                    <optgroup label="Jouw Selectie (20)">
+                      <option *ngFor="let r of squad" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </optgroup>
+                    <optgroup label="Overig Peloton">
+                      <option *ngFor="let r of allPelotonRiders" [value]="r.id">{{ r.shortName }} ({{ r.team?.shortName }})</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="slot-points-tag">+{{ tier.points }} pt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Bergklassement (Top 5) -->
+        <div class="col-12 col-lg-6 col-xl-3">
+          <div class="class-board-card board-mountain">
+            <div class="board-header">
+              <div class="jersey-icon-circle mountain-circle"><i class="fas fa-mountain"></i></div>
+              <div>
+                <h3 class="board-title">{{ activeTourInfo.mountainJerseyName }}</h3>
+                <span class="board-sub">Bergklassement (Top 5)</span>
+              </div>
+            </div>
+
+            <div class="class-slots-list">
+              <div *ngFor="let tier of scoritoPoints.mountain" class="class-slot-row">
+                <div class="slot-rank-box" [class.rank-podium]="tier.position <= 3">
+                  {{ tier.position }}
+                </div>
+                <div class="slot-select-wrapper">
+                  <select
+                    class="form-select form-select-sm class-select"
+                    [value]="gtService.classifications.mountain[tier.position] || ''"
+                    (change)="onClassificationChange('mountain', tier.position, $event)">
+                    <option value="">-- Kies renner --</option>
+                    <optgroup label="Jouw Selectie (20)">
+                      <option *ngFor="let r of squad" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </optgroup>
+                    <optgroup label="Overig Peloton">
+                      <option *ngFor="let r of allPelotonRiders" [value]="r.id">{{ r.shortName }} ({{ r.team?.shortName }})</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="slot-points-tag">+{{ tier.points }} pt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Jongerenklassement (Top 5) -->
+        <div class="col-12 col-lg-6 col-xl-3">
+          <div class="class-board-card board-youth">
+            <div class="board-header">
+              <div class="jersey-icon-circle youth-circle"><i class="fas fa-award"></i></div>
+              <div>
+                <h3 class="board-title">{{ activeTourInfo.youthJerseyName }}</h3>
+                <span class="board-sub">Jongerenklassement (Top 5)</span>
+              </div>
+            </div>
+
+            <div class="class-slots-list">
+              <div *ngFor="let tier of scoritoPoints.youth" class="class-slot-row">
+                <div class="slot-rank-box" [class.rank-podium]="tier.position <= 3">
+                  {{ tier.position }}
+                </div>
+                <div class="slot-select-wrapper">
+                  <select
+                    class="form-select form-select-sm class-select"
+                    [value]="gtService.classifications.youth[tier.position] || ''"
+                    (change)="onClassificationChange('youth', tier.position, $event)">
+                    <option value="">-- Kies renner --</option>
+                    <optgroup label="Jouw Selectie (20)">
+                      <option *ngFor="let r of squad" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </optgroup>
+                    <optgroup label="Overig Peloton">
+                      <option *ngFor="let r of allPelotonRiders" [value]="r.id">{{ r.shortName }} ({{ r.team?.shortName }})</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="slot-points-tag">+{{ tier.points }} pt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: 21-ETAPPES MATRIX                                      -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'matrix'" class="tab-matrix-content">
+      <div class="matrix-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="section-heading mb-1">21-Etappes Selectie Heatmap</h2>
+            <p class="text-muted small mb-0">Klik op een cel om een renner direct in of uit een etappe te zetten (max 9 renners per etappe).</p>
+          </div>
+          <div class="badge bg-light text-dark p-2">
+            <span>🟢 Vlak &nbsp; 🟠 Heuvel &nbsp; 🔴 Berg &nbsp; ⏱️ Tijdrit</span>
+          </div>
+        </div>
+
+        <div *ngIf="squad.length === 0" class="text-center p-5 text-muted">
+          Voeg eerst renners toe aan je selectie om de matrix te bekijken.
+        </div>
+
+        <div *ngIf="squad.length > 0" class="table-responsive matrix-table-wrapper">
+          <table class="table table-bordered table-hover align-middle matrix-table">
+            <thead class="table-dark">
+              <tr>
+                <th class="rider-col sticky-col">Renner ({{ squad.length }})</th>
+                <th class="count-col">Totaal</th>
+                <th *ngFor="let s of activeTourInfo.stages" class="stage-col {{ getStageBadgeClass(s.stageType) }}" title="Etappe {{ s.stageNumber }}: {{ getStageTypeName(s.stageType) }}">
+                  E{{ s.stageNumber }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of squad">
+                <td class="rider-col sticky-col">
+                  <div class="d-flex align-items-center gap-2">
+                    <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb-mini" alt="Jersey">
+                    <span class="fw-bold">{{ r.shortName }}</span>
+                    <span class="text-muted small">({{ r.team?.shortName }})</span>
+                  </div>
+                </td>
+                <td class="count-col fw-bold text-center">
+                  {{ gtService.getRiderStageCount(r.id) }}x
+                </td>
+                <td
+                  *ngFor="let s of activeTourInfo.stages"
+                  (click)="gtService.toggleRiderInStage(s.stageNumber, r.id)"
+                  class="stage-cell"
+                  [class.cell-active]="stageLineups[s.stageNumber]?.riderIds?.includes(r.id)"
+                  [class.cell-captain]="stageLineups[s.stageNumber]?.captainId === r.id"
+                  title="Klik om te wisselen voor Etappe {{ s.stageNumber }}">
+                  <span *ngIf="stageLineups[s.stageNumber]?.captainId === r.id">⭐</span>
+                  <span *ngIf="stageLineups[s.stageNumber]?.riderIds?.includes(r.id) && stageLineups[s.stageNumber]?.captainId !== r.id">✓</span>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light">
+              <tr class="fw-bold text-center">
+                <td class="text-start sticky-col">Totaal geselecteerd / 9</td>
+                <td>-</td>
+                <td *ngFor="let s of activeTourInfo.stages" [class.text-success]="(stageLineups[s.stageNumber]?.riderIds?.length || 0) === 9" [class.text-warning]="(stageLineups[s.stageNumber]?.riderIds?.length || 0) < 9">
+                  {{ stageLineups[s.stageNumber]?.riderIds?.length || 0 }}/9
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: SQUAD BUILDER (KIES JOUW 20 RENNERS)                    -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'squad'" class="tab-squad-content">
+      <div class="row g-4">
+
+        <!-- Left: Selected 20 Riders List -->
+        <div class="col-12 col-lg-5">
+          <div class="squad-panel-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="panel-title mb-0">Jouw 20 Renners</h3>
+              <span class="badge bg-primary px-3 py-2 fs-6">{{ squad.length }} / 20</span>
+            </div>
+
+            <div *ngIf="squad.length === 0" class="text-center p-4 text-muted border rounded">
+              Klik op een renner uit het peloton om toe te voegen aan je team.
+            </div>
+
+            <div class="squad-scroll-list">
+              <div *ngFor="let r of squad" class="squad-card-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb" alt="Jersey">
+                  <div>
+                    <div class="fw-bold">{{ r.firstName }} {{ r.lastName }}</div>
+                    <div class="text-muted small">
+                      <span class="badge bg-light text-dark me-1">{{ r.type || 'Allrounder' }}</span>
+                      {{ r.team?.name }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-bold text-primary">{{ formatPrice(r.price) }}</span>
+                  <button class="btn btn-outline-danger btn-sm" (click)="gtService.removeRiderFromSquad(r.id)" title="Verwijder">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Peloton Market / Search -->
+        <div class="col-12 col-lg-7">
+          <div class="peloton-panel-card">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <h3 class="panel-title mb-0">Peloton Renners</h3>
+              <div class="text-muted small">Totaal {{ filteredPelotonRiders.length }} renners beschikbaar</div>
+            </div>
+
+            <!-- Filters & Search Bar -->
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-md-5">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Zoek renner of ploeg..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyRiderFilters()">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-4">
+                <select class="form-select form-select-sm" [(ngModel)]="typeFilter" (change)="applyRiderFilters()">
+                  <option value="all">Alle Types</option>
+                  <option value="GC">Algemeen Klassement (GC)</option>
+                  <option value="Climber">Klimmers</option>
+                  <option value="Sprinter">Sprinters</option>
+                  <option value="TT">Tijdrijders</option>
+                  <option value="Hills">Heuvelspecialisten</option>
+                </select>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <select class="form-select form-select-sm" [(ngModel)]="sortBy" (change)="applyRiderFilters()">
+                  <option value="price_desc">Prijs: Hoog > Laag</option>
+                  <option value="price_asc">Prijs: Laag > Hoog</option>
+                  <option value="name">Naam (A-Z)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Peloton List -->
+            <div class="peloton-scroll-list">
+              <div
+                *ngFor="let r of filteredPelotonRiders"
+                class="peloton-rider-row d-flex justify-content-between align-items-center"
+                [class.row-selected]="isRiderInSquad(r.id)">
+
+                <div class="d-flex align-items-center gap-2">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb" alt="Jersey">
+                  <div>
+                    <div class="fw-bold">{{ r.firstName }} {{ r.lastName }}</div>
+                    <div class="text-muted small">
+                      <span class="badge bg-light text-dark me-1">{{ r.type || 'Allrounder' }}</span>
+                      {{ r.team?.shortName }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                  <span class="fw-bold">{{ formatPrice(r.price) }}</span>
+                  <button
+                    class="btn btn-sm"
+                    [class.btn-success]="isRiderInSquad(r.id)"
+                    [class.btn-primary]="!isRiderInSquad(r.id)"
+                    [disabled]="!isRiderInSquad(r.id) && (squad.length >= 20 || gtService.remainingBudget < r.price)"
+                    (click)="toggleSquadRider(r)">
+                    <i class="fas" [class.fa-check]="isRiderInSquad(r.id)" [class.fa-plus]="!isRiderInSquad(r.id)"></i>
+                    <span class="ms-1">{{ isRiderInSquad(r.id) ? 'In Team' : 'Voeg toe' }}</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>

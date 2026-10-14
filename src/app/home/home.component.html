@@ -6,7 +6,7 @@
     </div>
     <h1 class="hero-title">Kies je Wielerplanner</h1>
     <p class="hero-subtitle">
-      Selecteer je favoriete wielerspel, plan je 20 renners binnen het budget en optimaliseer je opstelling per koers.
+      Stel je droomteam van 20 renners samen binnen het budget van 45 miljoen, selecteer je dagopstellingen en optimaliseer je kopmannen voor maximale punten.
     </p>
   </header>
 
@@ -19,26 +19,36 @@
       [class.card-inactive]="!game.isActive"
       [attr.aria-label]="game.title">
 
-      <!-- Background Watermark Icon -->
+      <!-- Dynamic Watermark Icon -->
       <div class="card-watermark" aria-hidden="true">
         <i class="fas {{ game.icon }}"></i>
       </div>
 
       <!-- Card Inner Content -->
       <div class="card-content">
-        <!-- Top Metadata Row -->
+        <!-- Top Row: Flag + Jersey Badge + Edition -->
         <div class="card-header-row">
-          <span class="badge-jersey">{{ game.badge }}</span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="country-emoji">{{ game.flag }}</span>
+            <span class="badge-jersey">{{ game.badge }}</span>
+          </div>
           <span class="edition-tag">{{ game.edition }}</span>
         </div>
 
-        <!-- Center Icon & Title -->
+        <!-- Center: Icon, Title & Subtitle -->
         <div class="card-body-section">
           <div class="icon-circle">
             <i class="fas {{ game.icon }}"></i>
           </div>
           <h2 class="game-title">{{ game.title }}</h2>
           <p class="game-subtitle">{{ game.subtitle }}</p>
+
+          <!-- Quick Stats Pills -->
+          <div class="stats-pills-row">
+            <span *ngFor="let stat of game.stats" class="stat-pill">
+              {{ stat }}
+            </span>
+          </div>
         </div>
 
         <!-- Bottom Action Row -->
@@ -49,7 +59,7 @@
           </div>
 
           <div class="action-btn">
-            <span>Open</span>
+            <span>Open Planner</span>
             <i class="fas fa-arrow-right arrow-icon"></i>
           </div>
         </div>
@@ -60,16 +70,43 @@
   <!-- Feature Highlights Footer -->
   <footer class="hub-features">
     <div class="feature-item">
-      <i class="fas fa-wallet feature-icon"></i>
-      <span>Budget & Capitein Calculatie</span>
+      <div class="feature-icon-wrapper">
+        <i class="fas fa-wallet"></i>
+      </div>
+      <div>
+        <div class="feature-title">€45M Budget Bewaking</div>
+        <div class="feature-desc">Real-time controle op je saldo en teamgrootte</div>
+      </div>
     </div>
+
     <div class="feature-item">
-      <i class="fas fa-chart-line feature-icon"></i>
-      <span>Rennersstatistieken & Kwaliteiten</span>
+      <div class="feature-icon-wrapper">
+        <i class="fas fa-users-cog"></i>
+      </div>
+      <div>
+        <div class="feature-title">9 Renners per Etappe</div>
+        <div class="feature-desc">Dagelijkse opstelling en kopmankeuze per etappe</div>
+      </div>
     </div>
+
     <div class="feature-item">
-      <i class="fas fa-cloud-upload-alt feature-icon"></i>
-      <span>Live Cloud Sync met Firebase</span>
+      <div class="feature-icon-wrapper">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div>
+        <div class="feature-title">Klassementen Voorspellen</div>
+        <div class="feature-desc">Punten voor Algemeen, Punten, Berg en Jongeren</div>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <div class="feature-icon-wrapper">
+        <i class="fas fa-bolt"></i>
+      </div>
+      <div>
+        <div class="feature-title">Direct Opslaan</div>
+        <div class="feature-desc">Automatische synchronisatie met lokale opslag</div>
+      </div>
     </div>
   </footer>
 </div>
