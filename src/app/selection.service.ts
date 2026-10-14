@@ -233,6 +233,29 @@ export class SelectionService {
         }
     }
 
+    private mustHaveIdsSource = new BehaviorSubject<number[]>([]);
+    mustHaveIds$ = this.mustHaveIdsSource.asObservable();
+
+    get mustHaveIds(): number[] {
+        return this.mustHaveIdsSource.value;
+    }
+
+    toggleMustHave(riderId: number) {
+        const current = [...this.mustHaveIds];
+        const idx = current.indexOf(riderId);
+        if (idx > -1) {
+            current.splice(idx, 1);
+        } else {
+            current.push(riderId);
+        }
+        this.mustHaveIdsSource.next(current);
+        localStorage.setItem('default_must_haves', JSON.stringify(current));
+    }
+
+    isMustHave(riderId: number): boolean {
+        return this.mustHaveIds.includes(riderId);
+    }
+
     // selection string handling could be expanded here
     loadFromStorage(key: string) {
         const data = localStorage.getItem(key);
@@ -248,6 +271,11 @@ export class SelectionService {
         const captainsData = localStorage.getItem(key + '_race_captains');
         if (captainsData) {
             this.raceCaptainsSource.next(JSON.parse(captainsData));
+        }
+
+        const mustHaveData = localStorage.getItem('default_must_haves');
+        if (mustHaveData) {
+            this.mustHaveIdsSource.next(JSON.parse(mustHaveData));
         }
     }
 

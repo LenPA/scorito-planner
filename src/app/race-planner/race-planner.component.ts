@@ -5,6 +5,14 @@ import { races } from '../races';
 import { SelectionService } from '../selection.service';
 import { FirestoreService } from '../firestore.service';
 
+export interface MustHaveTier {
+  name: string;
+  badge: string;
+  badgeClass: string;
+  description: string;
+  riderIds: number[];
+}
+
 @Component({
   selector: 'app-race-planner',
   templateUrl: './race-planner.component.html',
@@ -14,158 +22,291 @@ import { FirestoreService } from '../firestore.service';
 export class RacePlannerComponent implements OnInit {
   races: ScoritoRace[] = races.sort((a, b) => a.StartDate > b.StartDate ? 1 : -1);
   allRiders: Rider[] = [];
+  filteredPelotonRiders: Rider[] = [];
   selectedRiders: Rider[] = [];
   raceSelections: { [eventId: number]: number[] } = {};
   raceCaptains: { [eventId: number]: { c1?: number, c2?: number, c3?: number } } = {};
+  mustHaveIds: number[] = [];
 
-  ridersPerRaceMap: { [eventId: number]: Rider[] } = {};
-  private triggerRidersCache: { [eventId: number]: { idsStr: string, riders: Rider[] } } = {};
+  activeTab: 'races' | 'musthaves' | 'matrix' | 'squad' = 'races';
+  selectedRaceIndex: number = 0;
 
-  private readonly EMPTY_RIDERS: Rider[] = [];
-  private readonly EMPTY_RIDER_IDS: number[] = [];
+  // Search and filter in peloton
+  searchQuery: string = '';
+  qualityFilter: string = 'all';
+  sortBy: 'price_desc' | 'price_asc' | 'races_desc' | 'name' = 'price_desc';
+
+  // Must-haves filter
+  mustHaveFilter: 'all' | 'in_squad' | 'not_in_squad' | 'cobbles' | 'hills' = 'all';
+
+  // Predefined curated high-profile classics riders for smart suggestions
+  readonly curatedMustHaveIds: number[] = [
+    // Top Tier Classics stars (Pogacar, VDP, WVA, Pedersen, Philipsen, Remco, De Lie, Laporte, Küng, Mohoric, Pidcock, etc.)
+  ];
 
   constructor(
-    private selectionService: SelectionService,
+    public selectionService: SelectionService,
     private firestoreService: FirestoreService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    // 1. Subscribe to the 20-man roster
+    // 1. Subscribe to selected 20 riders
     this.selectionService.selectedRiders$.subscribe(riders => {
       this.selectedRiders = riders;
     });
 
-    // 2. Subscribe to the individual race selections
+    // 2. Subscribe to race selections
     this.selectionService.raceSelections$.subscribe(selections => {
       this.raceSelections = selections || {};
     });
 
-    // 3. Subscribe to captain selections
+    // 3. Subscribe to captains
     this.selectionService.raceCaptains$.subscribe(captains => {
       this.raceCaptains = captains || {};
     });
 
-    // 4. Fetch all riders from Firestore
-    this.firestoreService.getAllRiders().subscribe((dbRiders) => {
+    // 4. Subscribe to must have IDs
+    this.selectionService.mustHaveIds$.subscribe(ids => {
+      this.mustHaveIds = ids || [];
+    });
+
+    // 5. Fetch all riders from Firestore
+    this.firestoreService.getAllRiders().subscribe(dbRiders => {
       if (dbRiders && dbRiders.length > 0) {
-        this.allRiders = dbRiders.sort((a, b) => b.price - a.price); // sort by highest price
-        this.buildRidersPerRaceMap();
-        this.triggerRidersCache = {}; // invalidate cache when DB updates
+        this.allRiders = dbRiders.sort((a, b) => b.price - a.price);
         this.selectionService.syncWithDatabase(this.allRiders);
-      }
-    });
-  }
 
-  // Optimize performance: compute the eligible riders for each race exactly once
-  buildRidersPerRaceMap() {
-    this.races.forEach(race => {
-      this.ridersPerRaceMap[race.EventId] = this.allRiders.filter(
-        rider => rider.races && rider.races[race.EventId] === 1
-      );
-    });
-  }
-
-  getRidersForRace(eventId: number): Rider[] {
-    return this.ridersPerRaceMap[eventId] || this.EMPTY_RIDERS;
-  }
-
-  // Get the selected Rider IDs for a specific race
-  getSelectedRiderIdsForRace(eventId: number): number[] {
-    return this.raceSelections[eventId] || this.EMPTY_RIDER_IDS;
-  }
-
-  getSortedSelectedRiders(eventId: number): Rider[] {
-    const ids = this.getSelectedRiderIdsForRace(eventId);
-    if (ids.length === 0 || this.allRiders.length === 0) return this.EMPTY_RIDERS;
-
-    const idsStr = ids.join(',');
-    if (this.triggerRidersCache[eventId] && this.triggerRidersCache[eventId].idsStr === idsStr) {
-      return this.triggerRidersCache[eventId].riders;
-    }
-
-    const riders = ids.map(id => this.allRiders.find(r => r.id === id)).filter(r => !!r) as Rider[];
-    riders.sort((a, b) => b.price - a.price);
-
-    this.triggerRidersCache[eventId] = { idsStr, riders };
-    return riders;
-  }
-
-  onRaceSelectionChange(eventId: number, newSelectionIds: number[]) {
-    // Check if new riders were added or removed
-    const prevSelection = this.raceSelections[eventId] || [];
-    const addedIds = newSelectionIds.filter(id => !prevSelection.includes(id));
-    const removedIds = prevSelection.filter(id => !newSelectionIds.includes(id));
-
-    // Deselect from whole squad if removed from this race
-    removedIds.forEach(id => {
-      const riderObj = this.allRiders.find(r => r.id === id);
-      if (riderObj) {
-        // Removing from the squad effectively unassigns them from ALL other auto-assigned races
-        this.selectionService.removeRider(riderObj);
-      }
-    });
-
-    addedIds.forEach(id => {
-      const riderObj = this.allRiders.find(r => r.id === id);
-      if (riderObj) {
-        // Add to main selection service. 
-        // This will also auto-add them to other races they ride independently.
-        if (!this.selectionService.isSelected(riderObj.id)) {
-          this.selectionService.addRider(riderObj);
+        // Auto-seed recommended must-haves if user has none saved yet
+        if (this.mustHaveIds.length === 0) {
+          const defaultTop = this.allRiders.filter(r => r.price >= 3500000).map(r => r.id);
+          defaultTop.forEach(id => this.selectionService.toggleMustHave(id));
         }
+
+        this.applyPelotonFilters();
       }
     });
-
-    // Sync state locally
-    this.selectionService.updateRaceSelection(eventId, newSelectionIds);
   }
 
-  getCaptainId(eventId: number, captainLevel: 1 | 2 | 3): number | undefined {
-    if (!this.raceCaptains[eventId]) return undefined;
-    return (this.raceCaptains[eventId] as any)[`c${captainLevel}`];
+  get activeRace(): ScoritoRace {
+    return this.races[this.selectedRaceIndex] || this.races[0];
   }
 
-  onCaptainSelectionChange(eventId: number, captainLevel: 1 | 2 | 3, event: Event) {
-    const target = event.target as HTMLSelectElement;
-    // Provide numeric riderId, or undefined if value was entirely cleared.
-    const val = target.value ? Number(target.value) : undefined;
-    this.selectionService.setCaptain(eventId, captainLevel, val);
-  }
-
-  getCaptainBgColor(eventId: number, captainLevel: 1 | 2 | 3): string {
-    const captainId = this.getCaptainId(eventId, captainLevel);
-    if (!captainId) return '#ffffff'; // white if empty
-
-    const rider = this.allRiders.find(r => r.id === captainId);
-    if (!rider) return '#ffffff';
-
-    return this.getRiderBgColor(rider);
-  }
-
-  get remainingBudget(): number {
-    return this.selectionService.remainingBudget;
-  }
-
-  getRiderBgColor(rider: Rider): string {
-    if (rider.price >= 7000000) return '#FFD700'; // Pure Pogacar Gold
-
-    // Vibrant colors for premium riders 2M and up
-    const premiumColors = [
-      '#ff7979', '#fada5e', '#48dbfb', '#ff9ff3', '#1dd1a1',
-      '#feca57', '#0abde3', '#10ac84', '#ffda79', '#ff9f43'
-    ];
-
-    // Faded, muted greys/pastels for under 2M riders
-    const basicColors = [
-      '#f8f9fa', '#e9ecef', '#dee2e6', '#ced4da', '#f1f2f6',
-      '#dfe4ea', '#f5f6fa', '#dcdde1', '#c8d6e5', '#ecf0f1'
-    ];
-
-    const baseHash = rider.id ? Math.abs(rider.id) : 0;
-
-    if (rider.price >= 2000000) {
-      return premiumColors[baseHash % premiumColors.length];
+  goToPrevRace() {
+    if (this.selectedRaceIndex > 0) {
+      this.selectedRaceIndex--;
     }
-    return basicColors[baseHash % basicColors.length];
+  }
+
+  goToNextRace() {
+    if (this.selectedRaceIndex < this.races.length - 1) {
+      this.selectedRaceIndex++;
+    }
+  }
+
+  // --- CAPTAINS LOGIC ---
+  getCaptainId(eventId: number, level: 1 | 2 | 3): number | undefined {
+    if (!this.raceCaptains[eventId]) return undefined;
+    return (this.raceCaptains[eventId] as any)[`c${level}`];
+  }
+
+  getCaptainRider(eventId: number, level: 1 | 2 | 3): Rider | undefined {
+    const id = this.getCaptainId(eventId, level);
+    if (!id) return undefined;
+    return this.allRiders.find(r => r.id === id);
+  }
+
+  setCaptain(eventId: number, level: 1 | 2 | 3, riderId: number | undefined) {
+    this.selectionService.setCaptain(eventId, level, riderId);
+  }
+
+  isRiderCaptainInRace(eventId: number, riderId: number): 1 | 2 | 3 | null {
+    if (!this.raceCaptains[eventId]) return null;
+    if (this.raceCaptains[eventId].c1 === riderId) return 1;
+    if (this.raceCaptains[eventId].c2 === riderId) return 2;
+    if (this.raceCaptains[eventId].c3 === riderId) return 3;
+    return null;
+  }
+
+  // Cycle captain status on matrix click
+  cycleCaptainInMatrix(eventId: number, rider: Rider) {
+    const isSelected = this.isRiderInRace(eventId, rider.id);
+    if (!isSelected) {
+      // First toggle into race
+      this.toggleRiderInRace(eventId, rider.id);
+      return;
+    }
+
+    const currentCap = this.isRiderCaptainInRace(eventId, rider.id);
+    if (currentCap === null) {
+      // Make 1st captain
+      this.setCaptain(eventId, 1, rider.id);
+    } else if (currentCap === 1) {
+      // Make 2nd captain
+      this.setCaptain(eventId, 2, rider.id);
+    } else if (currentCap === 2) {
+      // Make 3rd captain
+      this.setCaptain(eventId, 3, rider.id);
+    } else {
+      // Clear captaincy (remains regular starter)
+      this.setCaptain(eventId, 3, undefined);
+    }
+  }
+
+  // --- SQUAD & RACE PARTICIPATION ---
+  isRiderInSquad(riderId: number): boolean {
+    return this.selectedRiders.some(r => r.id === riderId);
+  }
+
+  toggleSquadRider(rider: Rider) {
+    if (this.isRiderInSquad(rider.id)) {
+      this.selectionService.removeRider(rider);
+    } else {
+      if (this.selectedRiders.length < 20 && this.selectionService.remainingBudget >= rider.price) {
+        this.selectionService.addRider(rider);
+      }
+    }
+  }
+
+  isRiderInRace(eventId: number, riderId: number): boolean {
+    return !!(this.raceSelections[eventId] && this.raceSelections[eventId].includes(riderId));
+  }
+
+  toggleRiderInRace(eventId: number, riderId: number) {
+    const current = this.raceSelections[eventId] || [];
+    let updated: number[];
+    if (current.includes(riderId)) {
+      updated = current.filter(id => id !== riderId);
+    } else {
+      updated = [...current, riderId];
+    }
+    this.selectionService.updateRaceSelection(eventId, updated);
+  }
+
+  getRidersSelectedForRace(eventId: number): Rider[] {
+    const ids = this.raceSelections[eventId] || [];
+    return ids.map(id => this.allRiders.find(r => r.id === id)).filter(r => !!r) as Rider[];
+  }
+
+  getSquadRidersForActiveRace(): Rider[] {
+    return this.selectedRiders.filter(r => this.isRiderInRace(this.activeRace.EventId, r.id));
+  }
+
+  getRiderRaceCount(rider: Rider): number {
+    if (!rider.races) return 0;
+    return Object.values(rider.races).filter(val => val === 1).length;
+  }
+
+  getCaptainsFilledCount(): number {
+    let count = 0;
+    this.races.forEach(r => {
+      const caps = this.raceCaptains[r.EventId];
+      if (caps && caps.c1 && caps.c2 && caps.c3) {
+        count++;
+      }
+    });
+    return count;
+  }
+
+  // --- MUST HAVES SECTION ---
+  toggleMustHave(riderId: number) {
+    this.selectionService.toggleMustHave(riderId);
+  }
+
+  isMustHave(riderId: number): boolean {
+    return this.selectionService.isMustHave(riderId);
+  }
+
+  get mustHaveRidersList(): Rider[] {
+    return this.allRiders.filter(r => this.isMustHave(r.id));
+  }
+
+  get filteredMustHaveRiders(): Rider[] {
+    let list = this.mustHaveRidersList;
+
+    if (this.mustHaveFilter === 'in_squad') {
+      list = list.filter(r => this.isRiderInSquad(r.id));
+    } else if (this.mustHaveFilter === 'not_in_squad') {
+      list = list.filter(r => !this.isRiderInSquad(r.id));
+    } else if (this.mustHaveFilter === 'cobbles') {
+      list = list.filter(r => r.qualities && r.qualities['Cobbles'] > 0);
+    } else if (this.mustHaveFilter === 'hills') {
+      list = list.filter(r => r.qualities && (r.qualities['Hill'] > 0 || r.qualities['Climb'] > 0));
+    }
+
+    return list.sort((a, b) => b.price - a.price);
+  }
+
+  get mustHavesInSquadCount(): number {
+    return this.mustHaveRidersList.filter(r => this.isRiderInSquad(r.id)).length;
+  }
+
+  get mustHavesBudgetSpent(): number {
+    return this.mustHaveRidersList
+      .filter(r => this.isRiderInSquad(r.id))
+      .reduce((sum, r) => sum + r.price, 0);
+  }
+
+  // --- FILTERING & SEARCH ---
+  applyPelotonFilters() {
+    let result = [...this.allRiders];
+
+    // Search query
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase().trim();
+      result = result.filter(r =>
+        `${r.firstName} ${r.lastName}`.toLowerCase().includes(query) ||
+        (r.team?.name && r.team.name.toLowerCase().includes(query)) ||
+        (r.team?.shortName && r.team.shortName.toLowerCase().includes(query))
+      );
+    }
+
+    // Quality filter
+    if (this.qualityFilter !== 'all') {
+      result = result.filter(r => r.qualities && r.qualities[this.qualityFilter] > 0);
+    }
+
+    // Sort
+    if (this.sortBy === 'price_desc') {
+      result.sort((a, b) => b.price - a.price);
+    } else if (this.sortBy === 'price_asc') {
+      result.sort((a, b) => a.price - b.price);
+    } else if (this.sortBy === 'races_desc') {
+      result.sort((a, b) => this.getRiderRaceCount(b) - this.getRiderRaceCount(a));
+    } else if (this.sortBy === 'name') {
+      result.sort((a, b) => a.lastName.localeCompare(b.lastName));
+    }
+
+    this.filteredPelotonRiders = result;
+  }
+
+  formatPrice(price: number): string {
+    if (!price && price !== 0) return '€0';
+    return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
+  }
+
+  getRaceBadgeClass(desc: string): string {
+    const d = (desc || '').toLowerCase();
+    if (d.includes('cobble')) return 'badge-cobbles';
+    if (d.includes('sprint')) return 'badge-sprint';
+    if (d.includes('gravel')) return 'badge-gravel';
+    if (d.includes('mountain') || d.includes('climb')) return 'badge-mountain';
+    if (d.includes('hill') || d.includes('punch')) return 'badge-hills';
+    return 'badge-flat';
+  }
+
+  getRaceTypeIcon(desc: string): string {
+    const d = (desc || '').toLowerCase();
+    if (d.includes('cobble')) return 'fa-chess-board';
+    if (d.includes('sprint')) return 'fa-bolt';
+    if (d.includes('gravel')) return 'fa-road';
+    if (d.includes('mountain')) return 'fa-mountain';
+    if (d.includes('hill') || d.includes('punch')) return 'fa-chart-line';
+    return 'fa-bicycle';
+  }
+
+  isMonument(race: ScoritoRace): boolean {
+    const short = (race.TranslatedNameShort || '').toUpperCase();
+    return ['MSR', 'TOF', 'RVV', 'PR', 'LBL'].includes(short);
   }
 }
+

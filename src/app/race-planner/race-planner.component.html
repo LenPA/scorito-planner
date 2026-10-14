@@ -1,112 +1,770 @@
-<div class="container-fluid px-4 m-0 mt-3">
+<div class="classics-planner-wrapper theme-classics">
 
-    <div class="row mb-3 align-items-center sticky-top bg-white p-2 border-bottom z-1">
-        <div class="col-auto">
-            <h4 class="mb-0">Race Planner</h4>
+  <!-- Top Hero Banner -->
+  <header class="tour-header">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 py-3">
+
+        <!-- Race Identity -->
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="country-flag">🇧🇪 🇫🇷</span>
+            <span class="tour-nickname">Kasseien & Heuvels</span>
+            <span class="badge-edition">Seizoen 2026 / 2027</span>
+          </div>
+          <h1 class="tour-title">Voorjaarsklassiekers</h1>
         </div>
-        <div class="col-auto ms-auto p-1 rounded" [ngClass]="{'text-danger border border-danger': remainingBudget < 0}">
-            <strong>Budget:</strong> {{ remainingBudget | currency:'EUR':'symbol':'1.0-0':'nl-NL' }}
+
+        <!-- Quick Switcher to Grand Tours -->
+        <div class="tour-switch-group">
+          <button class="tour-pill-btn active">
+            <span class="me-1">🇧🇪</span>
+            <span>Klassiekers</span>
+          </button>
+          <button routerLink="/grand-tour/tour" class="tour-pill-btn">
+            <span class="me-1">🇫🇷</span>
+            <span>Tour</span>
+          </button>
+          <button routerLink="/grand-tour/giro" class="tour-pill-btn">
+            <span class="me-1">🇮🇹</span>
+            <span>Giro</span>
+          </button>
+          <button routerLink="/grand-tour/vuelta" class="tour-pill-btn">
+            <span class="me-1">🇪🇸</span>
+            <span>Vuelta</span>
+          </button>
         </div>
-        <div class="col-auto p-1 rounded click-cursor"
-            [ngClass]="{'text-danger border border-danger': selectedRiders.length > 20}">
-            <strong>Riders:</strong> {{ selectedRiders.length }} / 20
+
+      </div>
+
+      <!-- Quick KPI Tracker Row -->
+      <div class="kpi-banner-row">
+        <!-- Budget Tracker -->
+        <div class="kpi-card">
+          <div class="kpi-label"><i class="fas fa-wallet me-1"></i> Resterend Budget</div>
+          <div class="kpi-value" [class.text-danger]="selectionService.remainingBudget < 0">
+            {{ formatPrice(selectionService.remainingBudget) }}
+          </div>
+          <div class="kpi-sub">van {{ formatPrice(45000000) }}</div>
         </div>
+
+        <!-- Squad Tracker -->
+        <div class="kpi-card" (click)="activeTab = 'squad'" role="button" title="Klik om selectie te bewerken">
+          <div class="kpi-label"><i class="fas fa-users me-1"></i> Geselecteerde Renners</div>
+          <div class="kpi-value" [class.text-danger]="selectedRiders.length > 20">
+            {{ selectedRiders.length }} / 20
+          </div>
+          <div class="kpi-sub">{{ 20 - selectedRiders.length }} plekken vrij</div>
+        </div>
+
+        <!-- Captains Completed Tracker -->
+        <div class="kpi-card" (click)="activeTab = 'races'" role="button" title="Bekijk kopmannen per koers">
+          <div class="kpi-label"><i class="fas fa-star me-1 text-warning"></i> Volledige Kopman-trio's</div>
+          <div class="kpi-value text-accent">{{ getCaptainsFilledCount() }} / {{ races.length }}</div>
+          <div class="kpi-sub">3 kopmannen (3x, 2.5x, 2x)</div>
+        </div>
+
+        <!-- Must-Haves Tracker -->
+        <div class="kpi-card" (click)="activeTab = 'musthaves'" role="button" title="Bekijk Must-Haves sectie">
+          <div class="kpi-label"><i class="fas fa-crown me-1 text-warning"></i> Must-Haves in Team</div>
+          <div class="kpi-value text-primary">{{ mustHavesInSquadCount }} / {{ mustHaveRidersList.length }}</div>
+          <div class="kpi-sub">{{ formatPrice(mustHavesBudgetSpent) }} besteed</div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="tour-nav-tabs mt-3">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'races'"
+          (click)="activeTab = 'races'">
+          <i class="fas fa-calendar-check me-2"></i> 16 Klassiekers (3 Kopmannen)
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'musthaves'"
+          (click)="activeTab = 'musthaves'">
+          <i class="fas fa-crown me-2 text-warning"></i> Must-Haves Sectie
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'matrix'"
+          (click)="activeTab = 'matrix'">
+          <i class="fas fa-th me-2"></i> Klassiekers Matrix
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'squad'"
+          (click)="activeTab = 'squad'">
+          <i class="fas fa-user-plus me-2"></i> Selectie ({{ selectedRiders.length }}/20)
+        </button>
+      </nav>
+
     </div>
+  </header>
 
-    <table class="table table-sm table-hover table-bordered align-middle">
-        <thead class="table-light">
-            <tr>
-                <th style="width: 200px;">Race</th>
-                <th style="width: 15%;">1st Captain (3x)</th>
-                <th style="width: 15%;">2nd Captain (2.5x)</th>
-                <th style="width: 15%;">3rd Captain (2x)</th>
-                <th>Selected Riders</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let race of races">
-                <td class="fw-bold px-2 py-3 bg-light">
-                    <div>{{ race.TranslatedNameShort }}</div>
-                    <small class="text-muted fw-normal">{{ race.TranslatedName }}</small>
-                </td>
-                <td class="px-2">
-                    <select class="form-select form-select-sm border border-secondary"
-                        [ngModel]="getCaptainId(race.EventId, 1)"
-                        [style.backgroundColor]="getCaptainBgColor(race.EventId, 1)"
-                        (change)="onCaptainSelectionChange(race.EventId, 1, $event)">
-                        <option [ngValue]="undefined">--- Select ---</option>
-                        <option *ngFor="let rider of getSortedSelectedRiders(race.EventId)" [value]="rider.id">
-                            {{ rider.lastName }} {{ rider.price >= 7000000 ? '👑' : '' }}
-                        </option>
-                    </select>
-                </td>
-                <td class="px-2">
-                    <select class="form-select form-select-sm border border-secondary"
-                        [ngModel]="getCaptainId(race.EventId, 2)"
-                        [style.backgroundColor]="getCaptainBgColor(race.EventId, 2)"
-                        (change)="onCaptainSelectionChange(race.EventId, 2, $event)">
-                        <option [ngValue]="undefined">--- Select ---</option>
-                        <option *ngFor="let rider of getSortedSelectedRiders(race.EventId)" [value]="rider.id">
-                            {{ rider.lastName }} {{ rider.price >= 7000000 ? '👑' : '' }}
-                        </option>
-                    </select>
-                </td>
-                <td class="px-2">
-                    <select class="form-select form-select-sm border border-secondary"
-                        [ngModel]="getCaptainId(race.EventId, 3)"
-                        [style.backgroundColor]="getCaptainBgColor(race.EventId, 3)"
-                        (change)="onCaptainSelectionChange(race.EventId, 3, $event)">
-                        <option [ngValue]="undefined">--- Select ---</option>
-                        <option *ngFor="let rider of getSortedSelectedRiders(race.EventId)" [value]="rider.id">
-                            {{ rider.lastName }} {{ rider.price >= 7000000 ? '👑' : '' }}
-                        </option>
-                    </select>
-                </td>
-                <td class="px-2">
-                    <div class="d-flex align-items-center">
-                        <!-- Render sorted selected riders visibly in the table cell -->
-                        <div class="d-flex flex-wrap gap-1 flex-grow-1">
-                            <span *ngFor="let rider of getSortedSelectedRiders(race.EventId)"
-                                class="badge py-1 px-2 text-dark align-content-center border"
-                                [ngClass]="{'fw-bold shadow-sm': rider.price >= 2000000, 'fw-normal': rider.price < 2000000, 'border-dark': rider.price >= 7000000, 'border-secondary': rider.price < 7000000}"
-                                [style.backgroundColor]="getRiderBgColor(rider)"
-                                style="font-size: 0.9em; min-width: 80px; text-align: center;">
-                                {{ rider.shortName }} <span *ngIf="rider.price >= 7000000">👑</span>
-                            </span>
-                        </div>
+  <!-- Main Body Content -->
+  <main class="container-fluid px-3 px-lg-4 py-4">
 
-                        <!-- Multiselect button picker overlay -->
-                        <mat-select class="ms-3 border border-secondary shadow-sm rounded p-2 flex-shrink-0 bg-white"
-                            style="width: 260px; cursor: pointer;" multiple
-                            [placeholder]="'Click to add/remove riders...'"
-                            [ngModel]="getSelectedRiderIdsForRace(race.EventId)"
-                            (ngModelChange)="onRaceSelectionChange(race.EventId, $event)">
+    <!-- ============================================================== -->
+    <!-- TAB 1: 16 KLASSIEKERS & 3 KOPMANNEN                            -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'races'" class="tab-stages-content">
 
-                            <mat-select-trigger>
-                                <span class="fw-bold text-dark w-100 d-inline-block text-center">
-                                    Edit Squad ({{ getSelectedRiderIdsForRace(race.EventId).length }})
-                                </span>
-                            </mat-select-trigger>
+      <!-- Horizontal 16 Races Stepper -->
+      <div class="stage-stepper-container mb-4">
+        <div class="stage-stepper">
+          <div
+            *ngFor="let race of races; let i = index"
+            (click)="selectedRaceIndex = i"
+            class="stage-chip"
+            [class.active]="selectedRaceIndex === i"
+            [class.complete]="!!(raceCaptains[race.EventId]?.c1 && raceCaptains[race.EventId]?.c2 && raceCaptains[race.EventId]?.c3)">
+            <div class="chip-number">
+              <span *ngIf="isMonument(race)">🏆 </span>{{ race.TranslatedNameShort }}
+            </div>
+            <div class="chip-badge {{ getRaceBadgeClass(race.TranslatedDescription) }}">
+              {{ race.TranslatedDescription | slice:0:10 }}
+            </div>
+            <div class="chip-count">
+              <i class="fas fa-star me-1" [class.text-warning]="!!raceCaptains[race.EventId]?.c1"></i>
+              {{ (raceCaptains[race.EventId]?.c1 ? 1 : 0) + (raceCaptains[race.EventId]?.c2 ? 1 : 0) + (raceCaptains[race.EventId]?.c3 ? 1 : 0) }}/3
+            </div>
+          </div>
+        </div>
+      </div>
 
-                            <mat-option *ngFor="let rider of getRidersForRace(race.EventId)" [value]="rider.id">
-                                <div class="d-flex justify-content-between align-items-center w-100 pe-2"
-                                    [ngClass]="{'fw-bold': rider.price >= 2000000}">
-                                    <span>
-                                        <span class="d-inline-block rounded-circle border me-2"
-                                            [ngClass]="{'border-dark shadow-sm': rider.price >= 7000000, 'border-secondary': rider.price < 7000000}"
-                                            [style.backgroundColor]="getRiderBgColor(rider)"
-                                            style="width: 12px; height: 12px; vertical-align: baseline;"></span>
-                                        {{ rider.lastName }}, {{ rider.firstName }} <span
-                                            *ngIf="rider.price >= 7000000">👑</span>
-                                    </span>
-                                    <span class="text-muted small ms-2">{{ rider.price |
-                                        currency:'EUR':'symbol':'1.0-0':'nl-NL' }}</span>
-                                </div>
-                            </mat-option>
-                        </mat-select>
+      <!-- Active Race Detailed View -->
+      <div class="row g-4">
+
+        <!-- Left Column: The 3 Captains Podium + Fielded Squad -->
+        <div class="col-12 col-xl-7">
+          <div class="stage-lineup-card">
+
+            <!-- Race Header Info -->
+            <div class="stage-card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="d-flex align-items-center gap-3">
+                <button (click)="goToPrevRace()" [disabled]="selectedRaceIndex <= 0" class="btn-stage-arrow" title="Vorige klassieker">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="stage-pill {{ getRaceBadgeClass(activeRace.TranslatedDescription) }}">
+                      <i class="fas {{ getRaceTypeIcon(activeRace.TranslatedDescription) }} me-1"></i>
+                      {{ activeRace.TranslatedDescription }}
+                    </span>
+                    <span *ngIf="isMonument(activeRace)" class="badge bg-warning text-dark fw-bold">
+                      🏆 Monument
+                    </span>
+                    <span class="stage-distance">{{ activeRace.StartDate | date:'d MMMM y' }}</span>
+                  </div>
+                  <h2 class="stage-header-title">{{ activeRace.TranslatedName }} ({{ activeRace.TranslatedNameShort }})</h2>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <div class="lineup-counter-badge" [class.counter-full]="!!(raceCaptains[activeRace.EventId]?.c1 && raceCaptains[activeRace.EventId]?.c2 && raceCaptains[activeRace.EventId]?.c3)">
+                  <i class="fas fa-star me-1"></i>
+                  <span>{{ (raceCaptains[activeRace.EventId]?.c1 ? 1 : 0) + (raceCaptains[activeRace.EventId]?.c2 ? 1 : 0) + (raceCaptains[activeRace.EventId]?.c3 ? 1 : 0) }}/3 Kopmannen</span>
+                </div>
+                <button (click)="goToNextRace()" [disabled]="selectedRaceIndex >= races.length - 1" class="btn-stage-arrow" title="Volgende klassieker">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- The 3 Captains Podium (Gold 3x, Silver 2.5x, Bronze 2x) -->
+            <div class="captains-podium-section my-3">
+              <h3 class="podium-title mb-2">
+                <i class="fas fa-crown text-warning me-2"></i>Kopmannen voor {{ activeRace.TranslatedNameShort }}
+              </h3>
+              <p class="text-muted small mb-3">
+                Jouw kopmannen vermenigvuldigen hun score: 1e kopman scoort <strong>3.0x</strong>, 2e kopman <strong>2.5x</strong> en 3e kopman <strong>2.0x</strong>.
+              </p>
+
+              <div class="captains-cards-grid">
+
+                <!-- 1st Captain (3.0x) -->
+                <div class="captain-card-box cap-gold">
+                  <div class="cap-medal-tag">
+                    <span class="medal-icon">🥇</span>
+                    <span class="cap-multiplier">1e Kopman (3.0x)</span>
+                  </div>
+
+                  <div *ngIf="getCaptainRider(activeRace.EventId, 1) as c1" class="cap-rider-content">
+                    <img *ngIf="c1.team?.tenueUrl" [src]="c1.team.tenueUrl" class="slot-jersey" alt="Jersey">
+                    <div class="slot-rider-name">{{ c1.shortName }}</div>
+                    <div class="slot-rider-meta">
+                      <span class="slot-price">{{ formatPrice(c1.price) }}</span>
+                      <span class="text-muted small">{{ c1.team?.shortName }}</span>
                     </div>
+                    <button class="btn btn-outline-danger btn-sm mt-2 py-0 px-2" (click)="setCaptain(activeRace.EventId, 1, undefined)">
+                      <i class="fas fa-times me-1"></i>Verwijder
+                    </button>
+                  </div>
+
+                  <div *ngIf="!getCaptainRider(activeRace.EventId, 1)" class="cap-empty-content">
+                    <div class="empty-icon-circle"><i class="fas fa-plus"></i></div>
+                    <div class="empty-label">Kies 1e Kopman</div>
+                    <select
+                      class="form-select form-select-sm mt-2"
+                      (change)="setCaptain(activeRace.EventId, 1, +$any($event.target).value)">
+                      <option value="">-- Kies uit team --</option>
+                      <option *ngFor="let r of selectedRiders" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 2nd Captain (2.5x) -->
+                <div class="captain-card-box cap-silver">
+                  <div class="cap-medal-tag">
+                    <span class="medal-icon">🥈</span>
+                    <span class="cap-multiplier">2e Kopman (2.5x)</span>
+                  </div>
+
+                  <div *ngIf="getCaptainRider(activeRace.EventId, 2) as c2" class="cap-rider-content">
+                    <img *ngIf="c2.team?.tenueUrl" [src]="c2.team.tenueUrl" class="slot-jersey" alt="Jersey">
+                    <div class="slot-rider-name">{{ c2.shortName }}</div>
+                    <div class="slot-rider-meta">
+                      <span class="slot-price">{{ formatPrice(c2.price) }}</span>
+                      <span class="text-muted small">{{ c2.team?.shortName }}</span>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm mt-2 py-0 px-2" (click)="setCaptain(activeRace.EventId, 2, undefined)">
+                      <i class="fas fa-times me-1"></i>Verwijder
+                    </button>
+                  </div>
+
+                  <div *ngIf="!getCaptainRider(activeRace.EventId, 2)" class="cap-empty-content">
+                    <div class="empty-icon-circle"><i class="fas fa-plus"></i></div>
+                    <div class="empty-label">Kies 2e Kopman</div>
+                    <select
+                      class="form-select form-select-sm mt-2"
+                      (change)="setCaptain(activeRace.EventId, 2, +$any($event.target).value)">
+                      <option value="">-- Kies uit team --</option>
+                      <option *ngFor="let r of selectedRiders" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 3rd Captain (2.0x) -->
+                <div class="captain-card-box cap-bronze">
+                  <div class="cap-medal-tag">
+                    <span class="medal-icon">🥉</span>
+                    <span class="cap-multiplier">3e Kopman (2.0x)</span>
+                  </div>
+
+                  <div *ngIf="getCaptainRider(activeRace.EventId, 3) as c3" class="cap-rider-content">
+                    <img *ngIf="c3.team?.tenueUrl" [src]="c3.team.tenueUrl" class="slot-jersey" alt="Jersey">
+                    <div class="slot-rider-name">{{ c3.shortName }}</div>
+                    <div class="slot-rider-meta">
+                      <span class="slot-price">{{ formatPrice(c3.price) }}</span>
+                      <span class="text-muted small">{{ c3.team?.shortName }}</span>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm mt-2 py-0 px-2" (click)="setCaptain(activeRace.EventId, 3, undefined)">
+                      <i class="fas fa-times me-1"></i>Verwijder
+                    </button>
+                  </div>
+
+                  <div *ngIf="!getCaptainRider(activeRace.EventId, 3)" class="cap-empty-content">
+                    <div class="empty-icon-circle"><i class="fas fa-plus"></i></div>
+                    <div class="empty-label">Kies 3e Kopman</div>
+                    <select
+                      class="form-select form-select-sm mt-2"
+                      (change)="setCaptain(activeRace.EventId, 3, +$any($event.target).value)">
+                      <option value="">-- Kies uit team --</option>
+                      <option *ngFor="let r of selectedRiders" [value]="r.id">{{ r.shortName }} ({{ formatPrice(r.price) }})</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Fielded Riders from Your Squad for This Classic -->
+            <div class="fielded-squad-section mt-4 pt-3 border-top">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="h6 fw-bold mb-0">
+                  <i class="fas fa-bicycle text-primary me-2"></i>Jouw Renners aan de start ({{ getSquadRidersForActiveRace().length }})
+                </h4>
+                <small class="text-muted">In de klassiekers scoren álle startende renners uit je team punten!</small>
+              </div>
+
+              <div *ngIf="getSquadRidersForActiveRace().length === 0" class="text-center p-4 border rounded bg-light">
+                <i class="fas fa-info-circle text-muted mb-2"></i>
+                <p class="text-muted small mb-0">Geen renners uit jouw selectie staan opgesteld voor deze koers. Voeg renners toe via het rechterpaneel.</p>
+              </div>
+
+              <div *ngIf="getSquadRidersForActiveRace().length > 0" class="squad-chips-grid">
+                <div
+                  *ngFor="let r of getSquadRidersForActiveRace()"
+                  class="squad-fielded-chip"
+                  [class.is-c1]="isRiderCaptainInRace(activeRace.EventId, r.id) === 1"
+                  [class.is-c2]="isRiderCaptainInRace(activeRace.EventId, r.id) === 2"
+                  [class.is-c3]="isRiderCaptainInRace(activeRace.EventId, r.id) === 3">
+
+                  <div class="d-flex align-items-center gap-2">
+                    <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb-mini" alt="Jersey">
+                    <div class="fw-bold text-dark">{{ r.shortName }}</div>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-1">
+                    <!-- Captain Quick Assign Buttons -->
+                    <button
+                      class="btn btn-xs btn-outline-warning"
+                      [class.btn-warning]="isRiderCaptainInRace(activeRace.EventId, r.id) === 1"
+                      [class.text-dark]="isRiderCaptainInRace(activeRace.EventId, r.id) === 1"
+                      (click)="setCaptain(activeRace.EventId, 1, isRiderCaptainInRace(activeRace.EventId, r.id) === 1 ? undefined : r.id)"
+                      title="1e Kopman (3.0x)">
+                      🥇 3x
+                    </button>
+                    <button
+                      class="btn btn-xs btn-outline-secondary"
+                      [class.btn-secondary]="isRiderCaptainInRace(activeRace.EventId, r.id) === 2"
+                      (click)="setCaptain(activeRace.EventId, 2, isRiderCaptainInRace(activeRace.EventId, r.id) === 2 ? undefined : r.id)"
+                      title="2e Kopman (2.5x)">
+                      🥈 2.5x
+                    </button>
+                    <button
+                      class="btn btn-xs btn-outline-dark"
+                      [class.btn-dark]="isRiderCaptainInRace(activeRace.EventId, r.id) === 3"
+                      (click)="setCaptain(activeRace.EventId, 3, isRiderCaptainInRace(activeRace.EventId, r.id) === 3 ? undefined : r.id)"
+                      title="3e Kopman (2.0x)">
+                      🥉 2x
+                    </button>
+                    <button
+                      class="btn btn-xs btn-outline-danger ms-1"
+                      (click)="toggleRiderInRace(activeRace.EventId, r.id)"
+                      title="Haal uit deze koers">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right Column: Squad Quick Selector (Pick from your 20) -->
+        <div class="col-12 col-xl-5">
+          <div class="squad-selector-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="selector-title">
+                <i class="fas fa-users text-primary me-2"></i>Jouw Selectie ({{ selectedRiders.length }}/20)
+              </h3>
+              <button class="btn btn-sm btn-outline-primary" (click)="activeTab = 'squad'">
+                <i class="fas fa-user-edit me-1"></i>Bewerk Selectie
+              </button>
+            </div>
+
+            <div *ngIf="selectedRiders.length === 0" class="empty-squad-notice text-center p-4">
+              <i class="fas fa-exclamation-triangle text-warning fs-3 mb-2"></i>
+              <h5>Nog geen renners in je team!</h5>
+              <p class="text-muted small">Ga naar het tabblad "Selectie" om eerst jouw 20 renners te kiezen.</p>
+              <button class="btn btn-primary btn-sm" (click)="activeTab = 'squad'">Kies 20 Renners</button>
+            </div>
+
+            <!-- Squad Rider List with 1-Click Race Toggle -->
+            <div *ngIf="selectedRiders.length > 0" class="squad-quick-list">
+              <div
+                *ngFor="let r of selectedRiders"
+                class="squad-rider-row"
+                [class.in-stage]="isRiderInRace(activeRace.EventId, r.id)">
+
+                <div class="d-flex align-items-center gap-2">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb" alt="Jersey">
+                  <div>
+                    <div class="rider-row-name">
+                      {{ r.shortName }}
+                      <span *ngIf="isRiderCaptainInRace(activeRace.EventId, r.id) === 1" class="badge bg-warning text-dark ms-1">🥇 3x</span>
+                      <span *ngIf="isRiderCaptainInRace(activeRace.EventId, r.id) === 2" class="badge bg-secondary text-white ms-1">🥈 2.5x</span>
+                      <span *ngIf="isRiderCaptainInRace(activeRace.EventId, r.id) === 3" class="badge bg-dark text-white ms-1">🥉 2x</span>
+                      <span *ngIf="isMustHave(r.id)" class="text-warning ms-1" title="Must-Have">👑</span>
+                    </div>
+                    <div class="rider-row-sub">
+                      <span class="badge bg-light text-dark me-1">{{ r.type || 'Klassiekers' }}</span>
+                      <span class="text-muted small">{{ formatPrice(r.price) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-secondary-subtle text-secondary small" title="Aantal klassiekers op het programma">
+                    {{ getRiderRaceCount(r) }} koersen
+                  </span>
+
+                  <button
+                    class="btn btn-sm btn-action-toggle"
+                    [class.btn-success]="isRiderInRace(activeRace.EventId, r.id)"
+                    [class.btn-outline-primary]="!isRiderInRace(activeRace.EventId, r.id)"
+                    (click)="toggleRiderInRace(activeRace.EventId, r.id)">
+                    <i class="fas" [class.fa-check]="isRiderInRace(activeRace.EventId, r.id)" [class.fa-plus]="!isRiderInRace(activeRace.EventId, r.id)"></i>
+                    <span class="ms-1">{{ isRiderInRace(activeRace.EventId, r.id) ? 'Rijdt mee' : 'Stel op' }}</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: MUST-HAVES SECTIE                                      -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'musthaves'" class="tab-musthaves-content">
+
+      <!-- Header & Must Haves KPI Tracker -->
+      <div class="classifications-hero mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-warning text-dark fw-bold px-2 py-1">👑 Scorito Sleutelrenners</span>
+              <span class="text-muted small">Voorjaarsklassiekers 2026/2027</span>
+            </div>
+            <h2 class="section-heading mb-1">Must-Haves & Kopmannen Analyse</h2>
+            <p class="text-muted mb-0">
+              In de voorjaarsklassiekers maken de grote kanonnen het verschil door de 3x, 2.5x en 2x vermenigvuldigers.
+              Markeer je onmisbare toppers, bewaak je teamdekking en ontdek koopjes!
+            </p>
+          </div>
+
+          <div class="total-points-card">
+            <span class="points-label">Must-Haves in jouw selectie:</span>
+            <span class="points-number">{{ mustHavesInSquadCount }} / {{ mustHaveRidersList.length }}</span>
+            <small class="text-white-50 d-block">{{ formatPrice(mustHavesBudgetSpent) }} besteed</small>
+          </div>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top">
+          <span class="fw-bold small text-muted me-2"><i class="fas fa-filter me-1"></i>Filter:</span>
+          <button
+            class="btn btn-sm btn-filter-pill"
+            [class.active]="mustHaveFilter === 'all'"
+            (click)="mustHaveFilter = 'all'">
+            Alle Must-Haves ({{ mustHaveRidersList.length }})
+          </button>
+          <button
+            class="btn btn-sm btn-filter-pill"
+            [class.active]="mustHaveFilter === 'in_squad'"
+            (click)="mustHaveFilter = 'in_squad'">
+            In mijn team ({{ mustHavesInSquadCount }})
+          </button>
+          <button
+            class="btn btn-sm btn-filter-pill"
+            [class.active]="mustHaveFilter === 'not_in_squad'"
+            (click)="mustHaveFilter = 'not_in_squad'">
+            Nog niet in team ({{ mustHaveRidersList.length - mustHavesInSquadCount }})
+          </button>
+          <button
+            class="btn btn-sm btn-filter-pill"
+            [class.active]="mustHaveFilter === 'cobbles'"
+            (click)="mustHaveFilter = 'cobbles'">
+            🧱 Kasseienspecialisten
+          </button>
+          <button
+            class="btn btn-sm btn-filter-pill"
+            [class.active]="mustHaveFilter === 'hills'"
+            (click)="mustHaveFilter = 'hills'">
+            ⛰️ Heuvel / Ardennen
+          </button>
+        </div>
+      </div>
+
+      <!-- Must-Haves Grid of Cards -->
+      <div class="row g-3">
+        <div *ngFor="let r of filteredMustHaveRiders" class="col-12 col-md-6 col-xl-4">
+          <div class="musthave-card" [class.is-in-team]="isRiderInSquad(r.id)">
+
+            <!-- Card Header: Jersey + Name + Price -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="musthave-jersey" alt="Jersey">
+                <div>
+                  <h4 class="musthave-name mb-0">
+                    {{ r.firstName }} {{ r.lastName }}
+                    <span *ngIf="r.price >= 6000000">👑</span>
+                  </h4>
+                  <span class="text-muted small">{{ r.team?.name }}</span>
+                </div>
+              </div>
+
+              <!-- Star / Must-Have Toggle Button -->
+              <button
+                class="btn-star-musthave"
+                [class.active]="isMustHave(r.id)"
+                (click)="toggleMustHave(r.id)"
+                title="Verwijder uit Must-Haves">
+                <i class="fas fa-crown"></i>
+              </button>
+            </div>
+
+            <!-- Price & Race Stats -->
+            <div class="musthave-stats-row my-2">
+              <div class="stat-box">
+                <span class="stat-box-label">Prijs</span>
+                <span class="stat-box-value text-primary">{{ formatPrice(r.price) }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-label">Programma</span>
+                <span class="stat-box-value">{{ getRiderRaceCount(r) }} koersen</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-label">Prijs / Koers</span>
+                <span class="stat-box-value text-muted">
+                  {{ getRiderRaceCount(r) > 0 ? formatPrice(r.price / getRiderRaceCount(r)) : '-' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Qualities Tags -->
+            <div class="d-flex flex-wrap gap-1 my-2">
+              <span *ngIf="r.qualities && r.qualities['Cobbles']" class="badge bg-secondary-subtle text-secondary small">
+                🧱 Kasseien {{ r.qualities['Cobbles'] }}★
+              </span>
+              <span *ngIf="r.qualities && r.qualities['Hill']" class="badge bg-warning-subtle text-warning-emphasis small">
+                ⛰️ Heuvel {{ r.qualities['Hill'] }}★
+              </span>
+              <span *ngIf="r.qualities && r.qualities['Sprint']" class="badge bg-info-subtle text-info-emphasis small">
+                ⚡ Sprint {{ r.qualities['Sprint'] }}★
+              </span>
+            </div>
+
+            <!-- Action Row: Squad Status & Button -->
+            <div class="musthave-action-row pt-2 mt-2 border-top d-flex justify-content-between align-items-center">
+              <span *ngIf="isRiderInSquad(r.id)" class="text-success fw-bold small">
+                <i class="fas fa-check-circle me-1"></i>In jouw selectie
+              </span>
+              <span *ngIf="!isRiderInSquad(r.id)" class="text-muted small">
+                Niet geselecteerd
+              </span>
+
+              <button
+                class="btn btn-sm"
+                [class.btn-success]="isRiderInSquad(r.id)"
+                [class.btn-primary]="!isRiderInSquad(r.id)"
+                [disabled]="!isRiderInSquad(r.id) && (selectedRiders.length >= 20 || selectionService.remainingBudget < r.price)"
+                (click)="toggleSquadRider(r)">
+                <i class="fas" [class.fa-check]="isRiderInSquad(r.id)" [class.fa-plus]="!isRiderInSquad(r.id)"></i>
+                <span class="ms-1">{{ isRiderInSquad(r.id) ? 'Verwijder uit team' : 'Voeg toe aan team' }}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: 16-KLASSIEKERS MATRIX                                   -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'matrix'" class="tab-matrix-content">
+      <div class="matrix-card">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div>
+            <h2 class="section-heading mb-1">16-Klassiekers Selectie & Kopmannen Heatmap</h2>
+            <p class="text-muted small mb-0">
+              Klik op een cel om de status te wijzigen: 🥇 1e Kopman (3x) ➔ 🥈 2e Kopman (2.5x) ➔ 🥉 3e Kopman (2x) ➔ ✓ Start ➔ Uit koers.
+            </p>
+          </div>
+          <div class="badge bg-light text-dark p-2 border">
+            <span>🥇 3.0x &nbsp; 🥈 2.5x &nbsp; 🥉 2.0x &nbsp; ✓ Startend</span>
+          </div>
+        </div>
+
+        <div *ngIf="selectedRiders.length === 0" class="text-center p-5 text-muted">
+          Voeg eerst renners toe aan je selectie om de matrix te bekijken.
+        </div>
+
+        <div *ngIf="selectedRiders.length > 0" class="table-responsive matrix-table-wrapper">
+          <table class="table table-bordered table-hover align-middle matrix-table">
+            <thead class="table-dark">
+              <tr>
+                <th class="rider-col sticky-col">Renner ({{ selectedRiders.length }})</th>
+                <th class="count-col">Totaal</th>
+                <th *ngFor="let r of races" class="stage-col {{ getRaceBadgeClass(r.TranslatedDescription) }}" title="{{ r.TranslatedName }}: {{ r.TranslatedDescription }}">
+                  {{ r.TranslatedNameShort }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of selectedRiders">
+                <td class="rider-col sticky-col">
+                  <div class="d-flex align-items-center gap-2">
+                    <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb-mini" alt="Jersey">
+                    <span class="fw-bold">{{ r.shortName }}</span>
+                    <span *ngIf="isMustHave(r.id)" class="text-warning small" title="Must-Have">👑</span>
+                  </div>
                 </td>
-            </tr>
-        </tbody>
-    </table>
+                <td class="count-col fw-bold text-center">
+                  {{ getRiderRaceCount(r) }}x
+                </td>
+                <td
+                  *ngFor="let race of races"
+                  (click)="cycleCaptainInMatrix(race.EventId, r)"
+                  class="stage-cell"
+                  [class.cell-c1]="isRiderCaptainInRace(race.EventId, r.id) === 1"
+                  [class.cell-c2]="isRiderCaptainInRace(race.EventId, r.id) === 2"
+                  [class.cell-c3]="isRiderCaptainInRace(race.EventId, r.id) === 3"
+                  [class.cell-active]="isRiderInRace(race.EventId, r.id) && !isRiderCaptainInRace(race.EventId, r.id)"
+                  title="Klik om kopman of deelname te wisselen voor {{ race.TranslatedNameShort }}">
+                  <span *ngIf="isRiderCaptainInRace(race.EventId, r.id) === 1">🥇 3x</span>
+                  <span *ngIf="isRiderCaptainInRace(race.EventId, r.id) === 2">🥈 2.5x</span>
+                  <span *ngIf="isRiderCaptainInRace(race.EventId, r.id) === 3">🥉 2x</span>
+                  <span *ngIf="isRiderInRace(race.EventId, r.id) && !isRiderCaptainInRace(race.EventId, r.id)">✓</span>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light">
+              <tr class="fw-bold text-center">
+                <td class="text-start sticky-col">Starters per Koers</td>
+                <td>-</td>
+                <td *ngFor="let race of races" [class.text-success]="getRidersSelectedForRace(race.EventId).length >= 10">
+                  {{ getRidersSelectedForRace(race.EventId).length }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: SQUAD BUILDER (KIES JOUW 20 RENNERS)                    -->
+    <!-- ============================================================== -->
+    <section *ngIf="activeTab === 'squad'" class="tab-squad-content">
+      <div class="row g-4">
+
+        <!-- Left: Selected 20 Riders List -->
+        <div class="col-12 col-lg-5">
+          <div class="squad-panel-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="panel-title mb-0">Jouw 20 Renners</h3>
+              <span class="badge bg-primary px-3 py-2 fs-6">{{ selectedRiders.length }} / 20</span>
+            </div>
+
+            <div *ngIf="selectedRiders.length === 0" class="text-center p-4 text-muted border rounded">
+              Klik op een renner uit het peloton om toe te voegen aan je selectie.
+            </div>
+
+            <div class="squad-scroll-list">
+              <div *ngFor="let r of selectedRiders" class="squad-card-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb" alt="Jersey">
+                  <div>
+                    <div class="fw-bold">
+                      {{ r.firstName }} {{ r.lastName }}
+                      <span *ngIf="isMustHave(r.id)" class="text-warning small" title="Must-Have">👑</span>
+                    </div>
+                    <div class="text-muted small">
+                      <span class="badge bg-light text-dark me-1">{{ r.type || 'Klassiekers' }}</span>
+                      {{ r.team?.name }} • {{ getRiderRaceCount(r) }} koersen
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-bold text-primary">{{ formatPrice(r.price) }}</span>
+                  <button class="btn btn-outline-danger btn-sm" (click)="selectionService.removeRider(r)" title="Verwijder">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Peloton Market / Search -->
+        <div class="col-12 col-lg-7">
+          <div class="peloton-panel-card">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <h3 class="panel-title mb-0">Peloton Renners</h3>
+              <div class="text-muted small">Totaal {{ filteredPelotonRiders.length }} renners beschikbaar</div>
+            </div>
+
+            <!-- Filters & Search Bar -->
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-md-5">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Zoek renner of ploeg..."
+                    [(ngModel)]="searchQuery"
+                    (input)="applyPelotonFilters()">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-4">
+                <select class="form-select form-select-sm" [(ngModel)]="qualityFilter" (change)="applyPelotonFilters()">
+                  <option value="all">Alle Kwaliteiten</option>
+                  <option value="Cobbles">Kasseien (Cobbles)</option>
+                  <option value="Hill">Heuvels (Hills)</option>
+                  <option value="Sprint">Sprinters</option>
+                  <option value="Climb">Klimmers</option>
+                </select>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <select class="form-select form-select-sm" [(ngModel)]="sortBy" (change)="applyPelotonFilters()">
+                  <option value="price_desc">Prijs: Hoog > Laag</option>
+                  <option value="price_asc">Prijs: Laag > Hoog</option>
+                  <option value="races_desc">Meeste Koersen</option>
+                  <option value="name">Naam (A-Z)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Peloton List -->
+            <div class="peloton-scroll-list">
+              <div
+                *ngFor="let r of filteredPelotonRiders"
+                class="peloton-rider-row d-flex justify-content-between align-items-center"
+                [class.row-selected]="isRiderInSquad(r.id)">
+
+                <div class="d-flex align-items-center gap-2">
+                  <img *ngIf="r.team?.tenueUrl" [src]="r.team.tenueUrl" class="rider-thumb" alt="Jersey">
+                  <div>
+                    <div class="fw-bold">
+                      {{ r.firstName }} {{ r.lastName }}
+                      <span *ngIf="isMustHave(r.id)" class="text-warning small" title="Must-Have">👑</span>
+                    </div>
+                    <div class="text-muted small">
+                      <span class="badge bg-light text-dark me-1">{{ r.type || 'Klassiekers' }}</span>
+                      {{ r.team?.shortName }} • {{ getRiderRaceCount(r) }} koersen
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                  <span class="fw-bold">{{ formatPrice(r.price) }}</span>
+                  <button
+                    class="btn btn-sm"
+                    [class.btn-success]="isRiderInSquad(r.id)"
+                    [class.btn-primary]="!isRiderInSquad(r.id)"
+                    [disabled]="!isRiderInSquad(r.id) && (selectedRiders.length >= 20 || selectionService.remainingBudget < r.price)"
+                    (click)="toggleSquadRider(r)">
+                    <i class="fas" [class.fa-check]="isRiderInSquad(r.id)" [class.fa-plus]="!isRiderInSquad(r.id)"></i>
+                    <span class="ms-1">{{ isRiderInSquad(r.id) ? 'In Team' : 'Voeg toe' }}</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
 </div>
