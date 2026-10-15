@@ -1,0 +1,97 @@
+<div class="modal-backdrop-custom" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="auth-card shadow-lg">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <div class="auth-icon-wrap">
+          <i class="fas fa-bicycle text-primary"></i>
+        </div>
+        <h5 class="mb-0 fw-bold">
+          {{ mode === 'login' ? 'Inloggen' : mode === 'register' ? 'Account aanmaken' : 'Wachtwoord herstellen' }}
+        </h5>
+      </div>
+      <button type="button" class="btn-close" aria-label="Sluiten" (click)="close()"></button>
+    </div>
+
+    <!-- Subtitle / reassurance -->
+    <p class="text-muted small mb-3">
+      {{ mode === 'forgot' 
+          ? 'Vul je e-mailadres in en ontvang direct een link om een nieuw wachtwoord in te stellen.' 
+          : 'Sla je rennersteams per grote ronde en klassiekers veilig op in de cloud.' }}
+    </p>
+
+    <!-- Mode Selector Tabs (Login / Register) -->
+    <div class="btn-group w-100 mb-3" *ngIf="mode !== 'forgot'">
+      <button type="button" class="btn btn-sm" 
+        [class.btn-primary]="mode === 'login'" 
+        [class.btn-outline-secondary]="mode !== 'login'"
+        (click)="switchMode('login')">
+        Inloggen
+      </button>
+      <button type="button" class="btn btn-sm" 
+        [class.btn-primary]="mode === 'register'" 
+        [class.btn-outline-secondary]="mode !== 'register'"
+        (click)="switchMode('register')">
+        Registreren
+      </button>
+    </div>
+
+    <!-- Error Alert -->
+    <div class="alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-3" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle text-danger"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Success Alert -->
+    <div class="alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-3" *ngIf="successMessage">
+      <i class="fas fa-check-circle text-success"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSubmit()" novalidate>
+      <div class="mb-3">
+        <label class="form-label small fw-semibold text-secondary">E-mailadres</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
+          <input type="email" class="form-control border-start-0" [(ngModel)]="email" name="email" 
+            placeholder="naam@voorbeeld.nl" required autocomplete="email" [disabled]="isLoading">
+        </div>
+      </div>
+
+      <div class="mb-3" *ngIf="mode !== 'forgot'">
+        <div class="d-flex justify-content-between align-items-center">
+          <label class="form-label small fw-semibold text-secondary">Wachtwoord</label>
+          <a *ngIf="mode === 'login'" role="button" class="small text-decoration-none text-primary" (click)="switchMode('forgot')">
+            Wachtwoord vergeten?
+          </a>
+        </div>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
+          <input type="password" class="form-control border-start-0" [(ngModel)]="password" name="password" 
+            placeholder="Minimaal 6 tekens" required autocomplete="current-password" [disabled]="isLoading">
+        </div>
+      </div>
+
+      <div class="mb-3" *ngIf="mode === 'register'">
+        <label class="form-label small fw-semibold text-secondary">Bevestig wachtwoord</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="fas fa-shield-alt text-muted"></i></span>
+          <input type="password" class="form-control border-start-0" [(ngModel)]="confirmPassword" name="confirmPassword" 
+            placeholder="Herhaal wachtwoord" required autocomplete="new-password" [disabled]="isLoading">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mt-2" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+        {{ mode === 'login' ? 'Inloggen' : mode === 'register' ? 'Account aanmaken' : 'Verstuur herstellink' }}
+      </button>
+
+      <div class="text-center mt-3" *ngIf="mode === 'forgot'">
+        <a role="button" class="small text-muted text-decoration-none" (click)="switchMode('login')">
+          <i class="fas fa-arrow-left me-1"></i> Terug naar inloggen
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

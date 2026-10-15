@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { races } from '../races';
 import { teams } from '../teams';
 import { ScoritoQuality, QualityType, ScoritoRace, ScoritoRider, ScoritoTeam } from "../scorito-types";
 import { ScoritoQueryGateway } from "../scorito-query-gateway";
 import { FirestoreService } from "../firestore.service";
+import { AnalyticsService, VisitorStats } from "../analytics.service";
+import { environment } from "../../environments/environment";
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -26,7 +29,15 @@ export class RiderJsonComponent implements OnInit {
 	qualities: QualityType[] = ["GC", "Climb", "Time trial", "Sprint", "Punch", "Hill", "Cobbles"];
 	riderTypes: string[] = ["Other", "GC", "Climber", "TT", "Sprinter", "Attacker", "Support", "Cobbles", "Hills"];
 
-	constructor(private httpClient: ScoritoQueryGateway, private firestoreService: FirestoreService) {
+	visitorStats$: Observable<VisitorStats | undefined>;
+	measurementId = environment.firebase.measurementId;
+
+	constructor(
+		private httpClient: ScoritoQueryGateway,
+		private firestoreService: FirestoreService,
+		private analyticsService: AnalyticsService
+	) {
+		this.visitorStats$ = this.analyticsService.getVisitorStats();
 	}
 
 	async ngOnInit(): Promise<void> {

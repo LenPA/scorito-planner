@@ -10,42 +10,113 @@
       </div>
     </a>
 
-    <nav class="d-flex align-items-center gap-2 flex-wrap">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-        class="nav-pill-btn">
-        <i class="fas fa-th-large me-1"></i>
-        <span>Overzicht</span>
-      </a>
-
-      <div class="nav-divider d-none d-sm-block"></div>
-
-      <!-- Klassiekers Section -->
-      <a routerLink="/planner" routerLinkActive="active" class="nav-pill-btn" title="Voorjaarsklassiekers Planner">
-        <span class="race-dot dot-classics me-1"></span>
-        <span>Klassiekers</span>
-      </a>
-
-      <div class="nav-divider d-none d-sm-block"></div>
-
-      <!-- Grote Rondes Section -->
-      <div class="nav-subgroup d-flex align-items-center gap-1">
-        <a routerLink="/grand-tour/giro" routerLinkActive="active" class="nav-pill-btn pill-giro" title="Giro d'Italia 21 Etappes">
-          <span class="race-dot dot-giro me-1"></span>
-          <span>Giro</span>
+    <!-- Navigation items & Auth -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <nav class="d-flex align-items-center gap-2 flex-wrap">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+          class="nav-pill-btn">
+          <i class="fas fa-th-large me-1"></i>
+          <span>Overzicht</span>
         </a>
-        <a routerLink="/grand-tour/tour" routerLinkActive="active" class="nav-pill-btn pill-tour" title="Tour de France 21 Etappes">
-          <span class="race-dot dot-tour me-1"></span>
-          <span>Tour</span>
+
+        <div class="nav-divider d-none d-sm-block"></div>
+
+        <!-- Klassiekers Section -->
+        <a routerLink="/planner" routerLinkActive="active" class="nav-pill-btn" title="Voorjaarsklassiekers Planner">
+          <span class="race-dot dot-classics me-1"></span>
+          <span>Klassiekers</span>
         </a>
-        <a routerLink="/grand-tour/vuelta" routerLinkActive="active" class="nav-pill-btn pill-vuelta" title="Vuelta a España 21 Etappes">
-          <span class="race-dot dot-vuelta me-1"></span>
-          <span>Vuelta</span>
-        </a>
+
+        <div class="nav-divider d-none d-sm-block"></div>
+
+        <!-- Grote Rondes Section -->
+        <div class="nav-subgroup d-flex align-items-center gap-1">
+          <a routerLink="/grand-tour/giro" routerLinkActive="active" class="nav-pill-btn pill-giro" title="Giro d'Italia 21 Etappes">
+            <span class="race-dot dot-giro me-1"></span>
+            <span>Giro</span>
+          </a>
+          <a routerLink="/grand-tour/tour" routerLinkActive="active" class="nav-pill-btn pill-tour" title="Tour de France 21 Etappes">
+            <span class="race-dot dot-tour me-1"></span>
+            <span>Tour</span>
+          </a>
+          <a routerLink="/grand-tour/vuelta" routerLinkActive="active" class="nav-pill-btn pill-vuelta" title="Vuelta a España 21 Etappes">
+            <span class="race-dot dot-vuelta me-1"></span>
+            <span>Vuelta</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="nav-divider d-none d-md-block"></div>
+
+      <!-- Sync Status & Auth Profile Section -->
+      <div class="d-flex align-items-center gap-2 ms-auto ms-md-0">
+        <!-- Sync Indicator -->
+        <ng-container *ngIf="syncStatus$ | async as syncStatus">
+          <span *ngIf="syncStatus === 'saving'" class="sync-pill sync-saving" title="Bezig met opslaan in de database...">
+            <i class="fas fa-sync-alt fa-spin me-1 text-primary"></i>
+            <span class="d-none d-sm-inline small">Opslaan...</span>
+          </span>
+          <span *ngIf="syncStatus === 'saved'" class="sync-pill sync-saved" title="Je team is veilig opgeslagen in de database">
+            <i class="fas fa-cloud me-1 text-success"></i>
+            <span class="d-none d-sm-inline text-muted small">Opgeslagen</span>
+          </span>
+          <button *ngIf="syncStatus === 'guest'" (click)="openAuthModal()" class="sync-pill sync-guest" title="Log in om je team in de database te bewaren">
+            <i class="fas fa-cloud-upload-alt me-1 text-primary"></i>
+            <span class="d-none d-sm-inline small">Lokaal (log in)</span>
+          </button>
+        </ng-container>
+
+        <!-- Auth Buttons / User Dropdown -->
+        <ng-container *ngIf="auth.user$ | async as user; else notLoggedIn">
+          <div class="position-relative">
+            <button class="user-pill-btn" (click)="toggleProfileMenu()">
+              <div class="user-avatar-circle">
+                {{ (user.email ? user.email.charAt(0) : 'U') | uppercase }}
+              </div>
+              <span class="user-email-text d-none d-lg-inline">{{ user.email }}</span>
+              <i class="fas fa-chevron-down ms-1" style="font-size: 10px;"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="user-dropdown-menu shadow-lg" *ngIf="isProfileMenuOpen">
+              <div class="user-dropdown-header">
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Ingelogd als</small>
+                  <span *ngIf="auth.isAdmin$ | async" class="badge bg-primary text-white" style="font-size: 10px;">Admin</span>
+                </div>
+                <strong class="text-truncate d-block">{{ user.email }}</strong>
+                <div class="d-flex align-items-center justify-content-between mt-1 pt-1 border-top" style="font-size: 11px;">
+                  <span class="text-muted text-truncate me-1" style="max-width: 140px;" [title]="user.uid">UID: {{ user.uid }}</span>
+                  <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" (click)="copyUid(user.uid)" title="Kopieer UID">
+                    <i class="far fa-copy text-secondary"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="dropdown-divider my-1" *ngIf="auth.isAdmin$ | async"></div>
+              <a *ngIf="auth.isAdmin$ | async" routerLink="/riders" class="dropdown-item py-2" (click)="isProfileMenuOpen = false">
+                <i class="fas fa-database me-2 text-primary"></i> Database & Sync
+              </a>
+              <div class="dropdown-divider my-1"></div>
+              <button class="dropdown-item py-2 text-danger" (click)="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i> Uitloggen
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #notLoggedIn>
+          <button class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-semibold d-flex align-items-center gap-1 shadow-sm" (click)="openAuthModal()">
+            <i class="fas fa-user"></i>
+            <span>Inloggen</span>
+          </button>
+        </ng-template>
       </div>
-    </nav>
+    </div>
   </div>
 </header>
 
 <main class="app-main-content">
   <router-outlet></router-outlet>
 </main>
+
+<app-auth-modal [isOpen]="isAuthModalOpen" (closeModal)="closeAuthModal()"></app-auth-modal>

@@ -20,7 +20,10 @@ import { HomeComponent } from './home/home.component';
 import { GrandTourComponent } from './grand-tour/grand-tour.component';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { getAuth, provideAuth } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
+
+import { AuthModalComponent } from './auth/auth-modal/auth-modal.component';
 
 registerLocaleData(localeNl, 'nl-NL');
 
@@ -33,7 +36,8 @@ registerLocaleData(localeNl, 'nl-NL');
         RiderJsonComponent,
         RiderCardComponent,
         TeamSummaryComponent,
-        RacePlannerComponent
+        RacePlannerComponent,
+        AuthModalComponent
     ],
     imports: [
         BrowserModule,
@@ -48,7 +52,8 @@ registerLocaleData(localeNl, 'nl-NL');
     ],
     providers: [
         provideFirebaseApp(() => initializeApp(environment.firebase)),
-        provideFirestore(() => getFirestore())
+        provideFirestore(() => getFirestore()),
+        provideAuth(() => getAuth())
     ],
     bootstrap: [AppComponent]
 })

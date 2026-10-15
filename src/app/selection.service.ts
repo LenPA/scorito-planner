@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Rider } from './types';
+import { AnalyticsService } from './analytics.service';
+import { UserTeamService } from './user-team.service';
 
 @Injectable({
     providedIn: 'root'
@@ -18,8 +20,35 @@ export class SelectionService {
     private readonly BUDGET_LIMIT = 45000000;
     private readonly RIDER_LIMIT = 20;
 
-    constructor() {
+    constructor(
+        private analytics: AnalyticsService,
+        private userTeamService: UserTeamService
+    ) {
         this.loadFromStorage('default');
+        this.reloadFromCloud();
+
+        this.userTeamService.authStateChanged$.subscribe(() => {
+            this.reloadFromCloud();
+        });
+    }
+
+    private async reloadFromCloud() {
+        const cloudTeam = await this.userTeamService.loadClassicsTeam();
+        if (cloudTeam) {
+            this.selectedRiderssource.next(cloudTeam.selectedRiders || []);
+            this.raceSelectionsSource.next(cloudTeam.raceSelections || {});
+            this.raceCaptainsSource.next(cloudTeam.raceCaptains || {});
+            this.mustHaveIdsSource.next(cloudTeam.mustHaveIds || []);
+        }
+    }
+
+    private triggerCloudSync() {
+        this.userTeamService.saveClassicsTeam({
+            selectedRiders: this.selectedRiders,
+            raceSelections: this.raceSelections,
+            raceCaptains: this.raceCaptains,
+            mustHaveIds: this.mustHaveIds
+        });
     }
 
     get selectedRiders(): Rider[] {
@@ -39,6 +68,12 @@ export class SelectionService {
         this.selectedRiderssource.next(updated);
         this.saveToStorage('default', updated);
 
+        this.analytics.trackEvent('add_rider', {
+            rider_id: rider.id,
+            rider_name: rider.shortName || rider.lastName,
+            rider_price: rider.price
+        });
+
         if (rider.races) {
             this.autoAssignRiderToRaces(rider.id, rider.races);
         }
@@ -48,6 +83,11 @@ export class SelectionService {
         const updated = this.selectedRiders.filter(r => r.id !== rider.id);
         this.selectedRiderssource.next(updated);
         this.saveToStorage('default', updated);
+
+        this.analytics.trackEvent('remove_rider', {
+            rider_id: rider.id,
+            rider_name: rider.shortName || rider.lastName
+        });
 
         // Also remove from all race selections and captaincies
         const currentRaceSelections = this.raceSelections;
@@ -146,6 +186,14 @@ export class SelectionService {
 
         this.raceCaptainsSource.next(current);
         this.saveCaptainsToStorage('default_race_captains', current);
+
+        if (riderId) {
+            this.analytics.trackEvent('set_captain', {
+                event_id: eventId,
+                captain_level: captainLevel,
+                rider_id: riderId
+            });
+        }
     }
 
     syncWithDatabase(dbRiders: Rider[]) {
@@ -250,6 +298,12 @@ export class SelectionService {
         }
         this.mustHaveIdsSource.next(current);
         localStorage.setItem('default_must_haves', JSON.stringify(current));
+        this.triggerCloudSync();
+
+        this.analytics.trackEvent('toggle_must_have', {
+            rider_id: riderId,
+            is_must_have: idx === -1
+        });
     }
 
     isMustHave(riderId: number): boolean {
@@ -281,13 +335,16 @@ export class SelectionService {
 
     saveToStorage(key: string, riders: Rider[]) {
         localStorage.setItem(key, JSON.stringify(riders));
+        this.triggerCloudSync();
     }
 
     saveRaceSelectionsToStorage(key: string, selections: { [eventId: number]: number[] }) {
         localStorage.setItem(key, JSON.stringify(selections));
+        this.triggerCloudSync();
     }
 
     saveCaptainsToStorage(key: string, captains: { [eventId: number]: { c1?: number, c2?: number, c3?: number } }) {
         localStorage.setItem(key, JSON.stringify(captains));
+        this.triggerCloudSync();
     }
 }

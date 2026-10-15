@@ -1,24 +1,89 @@
-<div class="p-3">
-    <div class="d-flex align-items-center mb-3">
-        <button class="btn btn-primary" (click)="syncFromScorito()" [disabled]="isSyncing">
-            <span *ngIf="isSyncing" class="spinner-border spinner-border-sm me-2" role="status"
-                aria-hidden="true"></span>
-            {{ isSyncing ? 'Syncing...' : 'Sync data' }}
-        </button>
-        <div class="text-muted ms-3" *ngIf="lastSyncAt && !isSyncing">
-            Last sync: {{lastSyncAt.toLocaleString()}}
+<div class="p-4 max-w-4xl">
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-database me-2 text-primary"></i>Scorito Database Sync</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <button class="btn btn-primary" (click)="syncFromScorito()" [disabled]="isSyncing">
+                    <span *ngIf="isSyncing" class="spinner-border spinner-border-sm me-2" role="status"
+                        aria-hidden="true"></span>
+                    {{ isSyncing ? 'Synchroniseren...' : 'Synchroniseer renners met Scorito' }}
+                </button>
+                <div class="text-muted ms-3" *ngIf="lastSyncAt && !isSyncing">
+                    <i class="far fa-clock me-1"></i> Laatste sync: {{lastSyncAt.toLocaleString()}}
+                </div>
+            </div>
+
+            <div *ngIf="isSyncing" class="mb-3" style="max-width: 500px;">
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="fw-semibold text-secondary">Renners opslaan in Firebase...</small>
+                    <small class="text-secondary">{{syncProgress}} / {{totalRidersToSync}}</small>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar"
+                        [style.width.%]="totalRidersToSync ? (syncProgress / totalRidersToSync) * 100 : 0"
+                        [attr.aria-valuenow]="syncProgress" aria-valuemin="0" [attr.aria-valuemax]="totalRidersToSync">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div *ngIf="isSyncing" class="mb-3" style="max-width: 400px;">
-        <div class="d-flex justify-content-between mb-1">
-            <small>Syncing riders to Firebase...</small>
-            <small>{{syncProgress}} / {{totalRidersToSync}}</small>
+    <!-- Analytics & Bezoekers Statistieken -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-chart-line me-2 text-success"></i>Bezoekers & Analytics</h5>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i> Tracking Actief
+            </span>
         </div>
-        <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                [style.width.%]="totalRidersToSync ? (syncProgress / totalRidersToSync) * 100 : 0"
-                [attr.aria-valuenow]="syncProgress" aria-valuemin="0" [attr.aria-valuemax]="totalRidersToSync">
+        <div class="card-body">
+            <div class="row g-3 mb-4" *ngIf="visitorStats$ | async as stats; else loadingStats">
+                <div class="col-sm-6 col-md-4">
+                    <div class="stat-box p-3 rounded bg-light border">
+                        <div class="text-muted small fw-semibold text-uppercase">Paginabezoeken</div>
+                        <div class="fs-2 fw-bold text-dark my-1">{{ stats?.totalPageViews || 0 }}</div>
+                        <div class="small text-muted"><i class="fas fa-mouse me-1"></i>Totaal aantal bekeken pagina's</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="stat-box p-3 rounded bg-light border">
+                        <div class="text-muted small fw-semibold text-uppercase">Unieke Sessies</div>
+                        <div class="fs-2 fw-bold text-dark my-1">{{ stats?.totalSessions || 0 }}</div>
+                        <div class="small text-muted"><i class="fas fa-users me-1"></i>Bezoekerssessies</div>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-4">
+                    <div class="stat-box p-3 rounded bg-light border">
+                        <div class="text-muted small fw-semibold text-uppercase">Laatste Bezoek</div>
+                        <div class="fs-6 fw-bold text-dark my-2">
+                            {{ stats?.lastVisitAt ? (stats.lastVisitAt | date:'medium') : 'Nog geen' }}
+                        </div>
+                        <div class="small text-muted"><i class="far fa-calendar-alt me-1"></i>Meest recente activiteit</div>
+                    </div>
+                </div>
+            </div>
+
+            <ng-template #loadingStats>
+                <div class="text-muted py-3">
+                    <span class="spinner-border spinner-border-sm me-2"></span> Statistieken laden...
+                </div>
+            </ng-template>
+
+            <div class="p-3 rounded-3 bg-light border d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="fw-semibold text-dark">
+                        <i class="fab fa-google text-danger me-1"></i> Google Analytics 4
+                        <span class="badge bg-secondary ms-2">{{ measurementId }}</span>
+                    </div>
+                    <small class="text-muted">
+                        Realtime bezoekers, geografische herkomst, apparaat-statistieken en wieler-selectie gebeurtenissen.
+                    </small>
+                </div>
+                <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark btn-sm text-nowrap">
+                    <i class="fas fa-external-link-alt me-1"></i> Open Google Analytics
+                </a>
             </div>
         </div>
     </div>

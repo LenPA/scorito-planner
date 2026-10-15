@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   cyclingBaseUrl: "", // empty = use proxy (proxy.conf.json forwards /cycling and /cyclingteammanager)
+  adminEmails: [] as string[],
   firebase: {
     apiKey: "AIzaSyDz4JJIAqVzDQYnAOUXYeVFDROL9I-wsBU",
     authDomain: "scorito-planner.firebaseapp.com",

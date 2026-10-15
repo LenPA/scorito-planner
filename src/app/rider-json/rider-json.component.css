@@ -1,0 +1,27 @@
+.max-w-4xl {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.stat-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.bg-success-subtle {
+    background-color: #d1fae5 !important;
+}
+
+.text-success {
+    color: #059669 !important;
+}
+
+.border-success-subtle {
+    border-color: #a7f3d0 !important;
+}

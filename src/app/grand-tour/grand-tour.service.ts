@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Rider } from '../types';
 import { GrandTourId, GrandTourInfo, StageLineup, TourClassificationPicks } from './grand-tour-types';
 import { GRAND_TOURS_DATA, SCORITO_POINTS } from './grand-tour-data';
+import { UserTeamService } from '../user-team.service';
 
 @Injectable({
   providedIn: 'root'
@@ -29,8 +30,13 @@ export class GrandTourService {
   readonly MAX_STAGE_RIDERS = 9;
   readonly BUDGET_LIMIT = 45000000;
 
-  constructor() {
+  constructor(private userTeamService: UserTeamService) {
     this.switchTour('tour');
+
+    // Herlaad actieve ronde wanneer gebruiker inlogt of uitlogt
+    this.userTeamService.authStateChanged$.subscribe(() => {
+      this.loadTourData(this.activeTourId);
+    });
   }
 
   get activeTourId(): GrandTourId {
@@ -63,8 +69,8 @@ export class GrandTourService {
     this.loadTourData(tourId);
   }
 
-  private loadTourData(tourId: GrandTourId) {
-    // 1. Load Squad
+  private async loadTourData(tourId: GrandTourId) {
+    // 1. Direct uit lokaal geheugen laden voor snelle weergave
     const savedSquad = localStorage.getItem(`gt_${tourId}_squad`);
     if (savedSquad) {
       try {
@@ -76,7 +82,7 @@ export class GrandTourService {
       this.squadSource.next([]);
     }
 
-    // 2. Load Stage Lineups (9 per stage)
+    // 2. Etappes laden
     const savedLineups = localStorage.getItem(`gt_${tourId}_stages`);
     if (savedLineups) {
       try {
@@ -88,7 +94,7 @@ export class GrandTourService {
       this.initDefaultLineups();
     }
 
-    // 3. Load Classifications
+    // 3. Klassementen laden
     const savedClass = localStorage.getItem(`gt_${tourId}_classifications`);
     if (savedClass) {
       try {
@@ -99,6 +105,24 @@ export class GrandTourService {
     } else {
       this.initDefaultClassifications();
     }
+
+    // 4. Uit Firestore cloud laden als de gebruiker is ingelogd
+    try {
+      const cloudData = await this.userTeamService.loadGrandTourTeam(tourId);
+      if (cloudData && this.activeTourId === tourId) {
+        if (cloudData.squad) this.squadSource.next(cloudData.squad);
+        if (cloudData.stageLineups) this.stageLineupsSource.next(cloudData.stageLineups);
+        if (cloudData.classifications) this.classificationsSource.next(cloudData.classifications);
+      }
+    } catch (_) {}
+  }
+
+  private triggerCloudSync() {
+    this.userTeamService.saveGrandTourTeam(this.activeTourId, {
+      squad: this.squad,
+      stageLineups: this.stageLineups,
+      classifications: this.classifications
+    });
   }
 
   private initDefaultLineups() {
@@ -159,6 +183,7 @@ export class GrandTourService {
 
   private saveSquad() {
     localStorage.setItem(`gt_${this.activeTourId}_squad`, JSON.stringify(this.squad));
+    this.triggerCloudSync();
   }
 
   // --- 21 STAGES DAILY LINEUP (9 RIDERS) ---
@@ -210,6 +235,7 @@ export class GrandTourService {
 
   private saveLineups() {
     localStorage.setItem(`gt_${this.activeTourId}_stages`, JSON.stringify(this.stageLineups));
+    this.triggerCloudSync();
   }
 
   // --- CLASSIFICATIONS PREDICTION ---
@@ -260,6 +286,7 @@ export class GrandTourService {
 
   private saveClassifications() {
     localStorage.setItem(`gt_${this.activeTourId}_classifications`, JSON.stringify(this.classifications));
+    this.triggerCloudSync();
   }
 
   // Calculate estimated classification points scored by riders who are in your squad
